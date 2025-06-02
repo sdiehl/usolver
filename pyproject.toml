@@ -5,7 +5,7 @@ description = "A best effort universal solver interface for MCP"
 author="Stephen Diehl"
 readme = "README.md"
 requires-python = ">=3.12"
-license = {text = "MIT"}
+license = {text = "Apache-2.0"}
 dependencies = [
     "z3-solver>=4.14.1.0",
     "pydantic>=2.0.0",
