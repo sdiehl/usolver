@@ -1,3 +1,7 @@
+<p align="center">
+    <img src=".github/logo.png" width="500px" alt="usolver">
+</p>
+
 # USolver
 
 A best-effort universal logic and numerical solver interface using MCP. Implements the "LLM sandwich" model where a query is interpreted by the LLM, calls out to a dedicated efficient solver fit for the problem, and then verbalizes the result. And the solver solutions can be chained together to solve more complex problems that require multi-step approaches.
