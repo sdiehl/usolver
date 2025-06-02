@@ -8,21 +8,15 @@ Exposes minimal solvers for the following software packages:
 * `cvxpy` - Convex optimization solver
 * `z3` - SMT solver over booleans, integers, reals, and strings
 
-To install run the `install.py` script.
+To install run the `install.py` script. This will install the MPC server for Claude Desktop and/or Cursor.
 
 ```shell
 uv run install.py
 ```
 
-To run the server manually:
-
-```shell
-uv run usolver
-```
-
 ## Examples
 
-To run the examples:
+To run the individual solver examples. You can invoke the individual examples. Below are example prompts that you can feed to the language model for these specific problems.
 
 ```shell
 uv run examples/example_z3.py
