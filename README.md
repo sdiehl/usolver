@@ -4,9 +4,7 @@
 
 # USolver
 
-A best-effort universal logic and numerical solver interface using MCP. Implements the "LLM sandwich" model where a query is interpreted by the LLM, calls out to a dedicated efficient solver fit for the problem, and then verbalizes the result. And the solver solutions can be chained together to solve more complex problems that require multi-step approaches.
-
-Exposes minimal solvers for the following software packages:
+A Model Context Protocol server that exposes tools for solving combinatorial, convex, integer programming, and non-linear optimization problems. Exposes interfaces to the following solvers:
 
 * `ortools` - Combinatorial optimization solver
 * `cvxpy` - Convex optimization solver
@@ -99,3 +97,7 @@ Use usolver to optimize a restaurant's layout and staffing with the following re
   - Variable demand: 40%-100% of capacity
   - Objective: Minimize labor cost ($25/hour per staff)
 ```
+
+## License
+
+Released under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
