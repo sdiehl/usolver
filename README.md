@@ -6,9 +6,9 @@
 
 A Model Context Protocol server that exposes tools for solving combinatorial, convex, integer programming, and non-linear optimization problems. Exposes interfaces to the following solvers:
 
-* `ortools` - Combinatorial optimization solver
-* `cvxpy` - Convex optimization solver
-* `z3` - SMT solver over booleans, integers, reals, and strings
+* [`ortools`](https://developers.google.com/optimization) - Combinatorial optimization solver
+* [`cvxpy`](https://www.cvxpy.org/) - Convex optimization solver
+* [`z3`](https://github.com/Z3Prover/z3) - SMT solver over booleans, integers, reals, and strings
 
 To install run the `install.py` script. This will install the MPC server for Claude Desktop and/or Cursor.
 
