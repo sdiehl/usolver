@@ -16,8 +16,9 @@ ENV PATH="/root/.local/bin/:$PATH"
 
 # Copy application code
 COPY pyproject.toml .
-COPY vars.py .
-COPY server.py .
+COPY uv.lock .
+COPY usolver_mcp/ ./usolver_mcp/
+COPY examples/ ./examples/
 
 # Expose the default MCP port
 EXPOSE 8081
@@ -27,4 +28,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8081/healthcheck || exit 1
 
 # Run the server with SSE transport
-CMD ["uv", "run", "--with", "mcp[cli]", "--with", "z3-solver", "mcp", "run", "/app/server.py", "--transport", "sse"] 
+CMD ["uv", "run", "mcp", "run", "usolver_mcp/server/main.py","--transport", "sse"]
