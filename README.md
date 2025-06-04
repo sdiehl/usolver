@@ -100,10 +100,30 @@ Use usolver to optimize a restaurant's layout and staffing with the following re
 
 ## Docker Usage
 
-You can run the MCP server directly from the GitHub Container Registry:
+Can also run the MCP server directly from the GitHub Container Registry.
 
 ```bash
 docker run -p 8081:8081 ghcr.io/sdiehl/usolver:latest
+```
+
+Then add the following to your client:
+
+```json
+{
+  "mcpServers": {
+    "sympy-mcp": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "-p",
+        "8081:8081",
+        "--rm",
+        "ghcr.io/sdiehl/usolver:latest"
+      ]
+    }
+  }
+}
 ```
 
 ## License
