@@ -98,6 +98,14 @@ Use usolver to optimize a restaurant's layout and staffing with the following re
   - Objective: Minimize labor cost ($25/hour per staff)
 ```
 
+## Docker Usage
+
+You can run the MCP server directly from the GitHub Container Registry:
+
+```bash
+docker run -p 8081:8081 ghcr.io/sdiehl/usolver:latest
+```
+
 ## License
 
 Released under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
