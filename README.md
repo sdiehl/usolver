@@ -50,53 +50,67 @@ Friend: Sorry, I would like to but I can't with the coins I have.
 What coins are your friend holding?
 ```
 
-As a constraint system this can be expressed as follows:
+This can be fed into usolver and it will generate a constraint system:
+
+$C$ is the collection of the six unknown coin values, $c_1$ through $c_6$, each of which must be a positive whole number representing cents.
 
 $$
 C = \{c_1, c_2, c_3, c_4, c_5, c_6\}, \quad \text{where each } c_i \in \mathbb{Z}^+
 $$
 
+$\mathcal{S}$ is the collection of every possible way you could choose two or more of your six coins.
+
 $$
-\mathcal{S} = \{S \mid S \subseteq C \land |S| \ge 2 \}
+\mathcal{S} = \\{S \mid S \subseteq C \land |S| \ge 2 \\}
 $$
 
 $$
 v(x) = \begin{cases} 0 & \text{if } x = 50 \\\\ x & \text{if } x \neq 50 \end{cases}
 $$
 
+Constraint 0: The sum of the values of all six coins is 115 cents.
+
 $$
 \sum_{i=1}^{6} c_i = 115
 $$
+
+Constraint 1: Cannot make change for a dollar.
 
 $$
 \forall S \in \mathcal{S}, \quad \sum_{x \in S} x \neq 100
 $$
 
+Constraint 2: Cannot make change for half a dollar.
+
 $$
 \forall S \in \mathcal{S}, \quad \sum_{x \in S} x \neq 50
 $$
+
+Constraint 3: Cannot make change for a quarter.
 
 $$
 \forall S \in \mathcal{S}, \quad \sum_{x \in S} x \neq 25
 $$
 
+Constraint 4: Cannot make change for a dime.
+
 $$
 \forall S \in \mathcal{S}, \quad \sum_{x \in S} x \neq 10
 $$
+
+Constraint 5: Cannot make change for a nickel
 
 $$
 \forall S \in \mathcal{S}, \quad \sum_{x \in S} x \neq 5
 $$
 
+Constraint 6: Cannot buy the candy because the vending machines does not take 50 cent coins.
+
 $$
 \forall S \in \mathcal{S}, \quad \sum_{x \in S} v(x) \neq 95
 $$
 
-$$
-c_1 \ge c_2 \ge c_3 \ge c_4 \ge c_5 \ge c_6
-$$
-
-If you feed this to solver it will synthesize the above constraint system and return the solution.
+If you feed this to solver it will synthesize the above constraint system, solve it with Z3, and return the solution.
 
 ```markdown
 Your friend has: 1 half dollar, 1 quarter, and 4 dimes
