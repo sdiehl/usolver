@@ -64,6 +64,8 @@ $$
 \mathcal{S} = \\{S \mid S \subseteq C \land |S| \ge 2 \\}
 $$
 
+Exclude the 50 cent coin from being used in the vending machine.
+
 $$
 v(x) = \begin{cases} 0 & \text{if } x = 50 \\\\ x & \text{if } x \neq 50 \end{cases}
 $$
@@ -104,7 +106,7 @@ $$
 \forall S \in \mathcal{S}, \quad \sum_{x \in S} x \neq 5
 $$
 
-Constraint 6: Cannot buy the candy because the vending machines does not take 50 cent coins.
+Constraint 6: Cannot buy the candy bar for 95 cents if half dollar is excluded.
 
 $$
 \forall S \in \mathcal{S}, \quad \sum_{x \in S} v(x) \neq 95
