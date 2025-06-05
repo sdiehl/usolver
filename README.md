@@ -61,7 +61,7 @@ $$
 $$
 
 $$
-v(x) = \begin{cases} 0 & \text{if } x = 50 \\ x & \text{if } x \neq 50 \end{cases}
+v(x) = \begin{cases} 0 & \text{if } x = 50 \\\\ x & \text{if } x \neq 50 \end{cases}
 $$
 
 $$
