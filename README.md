@@ -16,6 +16,8 @@ To install run the `install.py` script. This will install the MPC server for Cla
 uv run install.py
 ```
 
+Then open Claude or Cursor and you should see the MCP tool `usolver` available in the tool list.
+
 ## Examples
 
 To run the individual solver examples. You can invoke the individual examples. Below are example prompts that you can feed to the language model for these specific problems.
@@ -25,6 +27,81 @@ uv run examples/example_z3.py
 uv run examples/example_cvxpy.py
 uv run examples/example_ortools.py
 uv run examples/example_z3_simple.py
+```
+
+### Logic Puzzle
+
+```
+You and a friend pass by a standard coin operated vending machine and you decide to get a candy bar.
+The price is US $0.95, but after checking your pockets you only have a dollar (US $1) and the machine
+only takes coins. You turn to your friend and have this conversation:
+
+You: Hey, do you have change for a dollar?
+Friend: Let's see. I have 6 US coins but, although they add up to a US $1.15, I can't break a dollar.
+You: Huh? Can you make change for half a dollar?
+Friend: No.
+You: How about a quarter?
+Friend: Nope, and before you ask I cant make change for a dime or nickel either.
+You: Really? and these six coins are all US government coins currently in production?
+Friend: Yes.
+You: Well can you just put your coins into the vending machine and buy me a candy bar, and I'll pay you back?
+Friend: Sorry, I would like to but I can't with the coins I have.
+
+What coins are your friend holding?
+```
+
+As a constraint system this can be expressed as follows:
+
+$$
+C = \{c_1, c_2, c_3, c_4, c_5, c_6\}, \quad \text{where each } c_i \in \mathbb{Z}^+
+$$
+
+$$
+\mathcal{S} = \{S \mid S \subseteq C \land |S| \ge 2 \}
+$$
+
+$$
+v(x) = \begin{cases} 0 & \text{if } x = 50 \\ x & \text{if } x \neq 50 \end{cases}
+$$
+
+$$
+\sum_{i=1}^{6} c_i = 115
+$$
+
+$$
+\forall S \in \mathcal{S}, \quad \sum_{x \in S} x \neq 100
+$$
+
+$$
+\forall S \in \mathcal{S}, \quad \sum_{x \in S} x \neq 50
+$$
+
+$$
+\forall S \in \mathcal{S}, \quad \sum_{x \in S} x \neq 25
+$$
+
+$$
+\forall S \in \mathcal{S}, \quad \sum_{x \in S} x \neq 10
+$$
+
+$$
+\forall S \in \mathcal{S}, \quad \sum_{x \in S} x \neq 5
+$$
+
+$$
+\forall S \in \mathcal{S}, \quad \sum_{x \in S} v(x) \neq 95
+$$
+
+$$
+c_1 \ge c_2 \ge c_3 \ge c_4 \ge c_5 \ge c_6
+$$
+
+If you feed this to solver it will synthesize the above constraint system and return the solution.
+
+```markdown
+Your friend has: 1 half dollar, 1 quarter, and 4 dimes
+This totals 50¢ + 25¢ + 40¢ = 115¢ = $1.15 ✓
+This is exactly 6 coins ✓
 ```
 
 ### Z3
