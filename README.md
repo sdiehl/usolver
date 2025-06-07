@@ -55,7 +55,7 @@ This can be fed into usolver and it will generate a constraint system:
 $C$ is the collection of the six unknown coin values, $c_1$ through $c_6$, each of which must be a positive whole number representing cents.
 
 $$
-C = \{c_1, c_2, c_3, c_4, c_5, c_6\}, \quad \text{where each } c_i \in \mathbb{Z}^+
+C = \\{c_1, c_2, c_3, c_4, c_5, c_6\\}, \quad \text{where each } c_i \in \mathbb{Z}^+
 $$
 
 $\mathcal{S}$ is the collection of every possible way you could choose two or more of your six coins.
@@ -118,6 +118,59 @@ If you feed this to solver it will synthesize the above constraint system, solve
 Your friend has: 1 half dollar, 1 quarter, and 4 dimes
 This totals 50¢ + 25¢ + 40¢ = 115¢ = $1.15 ✓
 This is exactly 6 coins ✓
+```
+
+### Modern Portfolio Theory
+
+A finance example:
+
+```markdown
+Objective: Maximize expected portfolio return
+Constraints:
+
+Bonds allocation cannot exceed 40%
+Stocks allocation cannot exceed 60%
+Real Estate allocation cannot exceed 30%
+Commodities allocation cannot exceed 20%
+All allocations must be non-negative
+Total allocation must equal exactly 100%
+Total weighted portfolio risk cannot exceed 10%
+
+Given Data:
+
+Expected returns: Bonds 8%, Stocks 12%, Real Estate 10%, Commodities 15%
+Risk factors: Bonds 2%, Stocks 15%, Real Estate 8%, Commodities 20%
+```
+
+This is compiled by the langauge model down into a convex optimization problem that can be cvxopt.
+
+$$
+\begin{align}
+\text{maximize} \quad & 0.08x_1 + 0.12x_2 + 0.10x_3 + 0.15x_4 \\
+\text{subject to} \quad & x_1 + x_2 + x_3 + x_4 = 1 \\
+& x_1 \leq 0.4 \\
+& x_2 \leq 0.6 \\
+& x_3 \leq 0.3 \\
+& x_4 \leq 0.2 \\
+& 0.02x_1 + 0.15x_2 + 0.08x_3 + 0.20x_4 \leq 0.10 \\
+& x_1, x_2, x_3, x_4 \geq 0
+\end{align}
+$$
+
+Where:
+- $x_1$ = Bonds allocation
+- $x_2$ = Stocks allocation
+- $x_3$ = Real Estate allocation
+- $x_4$ = Commodities allocation
+
+The answer is then:
+
+```markdown
+Bonds: 30.0%
+Stocks: 20.0%
+Real Estate: 30.0% (at maximum allowed)
+Commodities: 20.0% (at maximum allowed)
+Maximum Expected Return: 10.8% annually
 ```
 
 ### Z3
