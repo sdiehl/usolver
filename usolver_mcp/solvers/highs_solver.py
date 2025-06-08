@@ -35,7 +35,9 @@ def _convert_constraint_sense(
             return (rhs, rhs)
 
 
-def _get_variable_bounds(var_spec: HiGHSVariable, var_index: int) -> tuple[float, float]:
+def _get_variable_bounds(
+    var_spec: HiGHSVariable, var_index: int
+) -> tuple[float, float]:
     """Get variable bounds, applying defaults based on variable type."""
     inf = highspy.kHighsInf
 
@@ -81,7 +83,9 @@ def _build_constraint_matrix(
         return Failure(f"Error building constraint matrix: {e}")
 
 
-def _apply_options(h: "highspy.Highs", options: HiGHSOptions | None) -> Result[None, str]:
+def _apply_options(
+    h: "highspy.Highs", options: HiGHSOptions | None
+) -> Result[None, str]:
     """Apply solver options to HiGHs instance."""
     try:
         if options is None:
@@ -193,7 +197,11 @@ def solve_problem(problem: HiGHSProblem) -> Result[HiGHSOutput, str]:
         constraint_upper = np.zeros(num_constraints, dtype=float)
 
         for i, (sense, rhs) in enumerate(
-            zip(problem_spec.constraints.sense, problem_spec.constraints.rhs, strict=False)
+            zip(
+                problem_spec.constraints.sense,
+                problem_spec.constraints.rhs,
+                strict=False,
+            )
         ):
             lb, ub = _convert_constraint_sense(sense, rhs)
             constraint_lower[i] = lb
