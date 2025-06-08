@@ -14,6 +14,17 @@ from usolver_mcp.models.cvxpy_models import (
     CVXPYVariable,
     ObjectiveType,
 )
+from usolver_mcp.models.highs_models import (
+    HiGHSConstraints,
+    HiGHSConstraintSense,
+    HiGHSObjective,
+    HiGHSOptions,
+    HiGHSProblem,
+    HiGHSProblemSpec,
+    HiGHSSense,
+    HiGHSVariable,
+    HiGHSVariableType,
+)
 from usolver_mcp.models.ortools_models import (
     Problem as ORToolsProblem,
 )
@@ -24,6 +35,7 @@ from usolver_mcp.models.z3_models import (
     Z3VariableType,
 )
 from usolver_mcp.solvers.cvxpy_solver import solve_cvxpy_problem
+from usolver_mcp.solvers.highs_solver import solve_problem as solve_highs_problem
 from usolver_mcp.solvers.ortools_solver import (
     solve_problem as solve_ortools_problem,
 )
@@ -40,6 +52,7 @@ app = FastMCP(
         "fastmcp>=0.1.0",
         "cvxpy>=1.6.0",
         "ortools<9.12.0",
+        "highspy>=1.7.0",
     ],
 )
 
@@ -160,6 +173,226 @@ async def solve_z3_simple(
                 ]
     except Exception as e:
         return [TextContent(type="text", text=f"Error in solve_z3_simple: {e!s}")]
+
+
+@app.tool("solve_highs_problem")
+async def solve_highs_problem_tool(problem: HiGHSProblem) -> list[TextContent]:
+    """Solve a HiGHs linear/mixed-integer programming problem.
+
+    This tool takes a HiGHs optimization problem defined with variables, objective,
+    and constraints, and returns a solution if one exists.
+
+    HiGHs is a high-performance linear programming solver that supports:
+    - Linear programming (LP)
+    - Mixed-integer programming (MIP)
+    - Both dense and sparse constraint matrices
+    - Various solver algorithms (simplex, interior point, etc.)
+
+    Example problem structure:
+    {
+        "problem": {
+            "sense": "minimize",
+            "objective": {
+                "linear": [1.0, 2.0, 3.0]
+            },
+            "variables": [
+                {"name": "x1", "lb": 0, "ub": 10, "type": "cont"},
+                {"name": "x2", "lb": 0, "ub": null, "type": "cont"},
+                {"name": "x3", "lb": 0, "ub": 1, "type": "bin"}
+            ],
+            "constraints": {
+                "dense": [
+                    [1, 1, 0],
+                    [0, 1, 1]
+                ],
+                "sense": ["<=", ">="],
+                "rhs": [5, 3]
+            }
+        },
+        "options": {
+            "time_limit": 60.0,
+            "output_flag": false
+        }
+    }
+
+    Args:
+        problem: The HiGHs problem definition with variables, objective, and constraints
+
+    Returns:
+        A list of TextContent containing the solution or an error message
+    """
+    result = solve_highs_problem(problem)
+
+    match result:
+        case Success(solution):
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(
+                        {
+                            "status": solution.status.value,
+                            "objective_value": solution.objective_value,
+                            "solution": solution.solution,
+                            "dual_solution": solution.dual_solution,
+                            "variable_duals": solution.variable_duals,
+                        }
+                    ),
+                )
+            ]
+        case Failure(error):
+            return [TextContent(type="text", text=f"Error solving problem: {error}")]
+        case _:
+            return [
+                TextContent(
+                    type="text",
+                    text="Unexpected error in solve_highs_problem_tool",
+                )
+            ]
+
+
+@app.tool("simple_highs_solver")
+async def simple_highs_solver(
+    sense: str,
+    objective_coeffs: list[float],
+    variables: list[dict[str, Any]],
+    constraint_matrix: list[list[float]],
+    constraint_senses: list[str],
+    rhs_values: list[float],
+    options: dict[str, Any] | None = None,
+    description: str = "",
+) -> list[TextContent]:
+    """A simplified interface for solving HiGHs linear programming problems.
+
+    This tool provides a more straightforward interface for HiGHs problems,
+    without requiring the full HiGHSProblem model structure.
+
+    Args:
+        sense: Optimization sense, either "minimize" or "maximize"
+        objective_coeffs: List of objective function coefficients
+        variables: List of variable definitions with optional bounds and types
+        constraint_matrix: 2D list representing the constraint matrix (dense format)
+        constraint_senses: List of constraint directions ("<=", ">=", "=")
+        rhs_values: List of right-hand side values for constraints
+        options: Optional solver options dictionary
+        description: Optional description of the problem
+
+    Returns:
+        A list of TextContent containing the solution or an error message
+    """
+    try:
+        # Validate sense
+        try:
+            problem_sense = HiGHSSense(sense)
+        except ValueError:
+            return [
+                TextContent(
+                    type="text",
+                    text=(
+                        f"Invalid sense: {sense}. "
+                        f"Must be one of: {', '.join([s.value for s in HiGHSSense])}"
+                    ),
+                )
+            ]
+
+        # Create objective
+        objective = HiGHSObjective(linear=objective_coeffs)
+
+        # Create variables
+        problem_variables = []
+        for i, var in enumerate(variables):
+            var_name = var.get("name", f"x{i+1}")
+            var_lb = var.get("lb", 0.0)
+            var_ub = var.get("ub", None)
+            var_type_str = var.get("type", "cont")
+
+            try:
+                var_type = HiGHSVariableType(var_type_str)
+            except ValueError:
+                return [
+                    TextContent(
+                        type="text",
+                        text=(
+                            f"Invalid variable type: {var_type_str}. "
+                            f"Must be one of: {', '.join([t.value for t in HiGHSVariableType])}"
+                        ),
+                    )
+                ]
+
+            problem_variables.append(
+                HiGHSVariable(name=var_name, lb=var_lb, ub=var_ub, type=var_type)
+            )
+
+        # Create constraints
+        constraint_sense_enums = []
+        for sense_str in constraint_senses:
+            try:
+                constraint_sense_enums.append(HiGHSConstraintSense(sense_str))
+            except ValueError:
+                return [
+                    TextContent(
+                        type="text",
+                        text=(
+                            f"Invalid constraint sense: {sense_str}. "
+                            f"Must be one of: {', '.join([s.value for s in HiGHSConstraintSense])}"
+                        ),
+                    )
+                ]
+
+        constraints = HiGHSConstraints(
+            dense=constraint_matrix,
+            sparse=None,
+            sense=constraint_sense_enums,
+            rhs=rhs_values,
+        )
+
+        # Create problem specification
+        problem_spec = HiGHSProblemSpec(
+            sense=problem_sense,
+            objective=objective,
+            variables=problem_variables,
+            constraints=constraints,
+        )
+
+        # Create options if provided
+        highs_options = None
+        if options:
+            highs_options = HiGHSOptions(**options)
+
+        # Create full problem
+        problem = HiGHSProblem(problem=problem_spec, options=highs_options)
+
+        # Solve the problem
+        result = solve_highs_problem(problem)
+
+        match result:
+            case Success(solution):
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {
+                                "status": solution.status.value,
+                                "objective_value": solution.objective_value,
+                                "solution": solution.solution,
+                                "dual_solution": solution.dual_solution,
+                                "variable_duals": solution.variable_duals,
+                            }
+                        ),
+                    )
+                ]
+            case Failure(error):
+                return [
+                    TextContent(type="text", text=f"Error solving problem: {error}")
+                ]
+            case _:
+                return [
+                    TextContent(
+                        type="text",
+                        text="Unexpected error in simple_highs_solver",
+                    )
+                ]
+    except Exception as e:
+        return [TextContent(type="text", text=f"Error in simple_highs_solver: {e!s}")]
 
 
 @app.tool("solve_cvxpy_problem")

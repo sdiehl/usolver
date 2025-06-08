@@ -313,7 +313,6 @@ def solve_problem(problem: Problem) -> Result[Solution, str]:
         # Create variables
         vars_result = create_variables(model, problem.variables)
         if isinstance(vars_result, Failure):
-            print(f"Error creating variables: {vars_result.failure()}")
             return vars_result
 
         variables_dict, globals_dict = vars_result.unwrap()
@@ -323,7 +322,6 @@ def solve_problem(problem: Problem) -> Result[Solution, str]:
             model, problem.constraints, variables_dict, globals_dict
         )
         if isinstance(constraints_result, Failure):
-            print(f"Error creating constraints: {constraints_result.failure()}")
             return constraints_result
 
         # Add objective
@@ -331,7 +329,6 @@ def solve_problem(problem: Problem) -> Result[Solution, str]:
             model, problem.objective, variables_dict, globals_dict
         )
         if isinstance(objective_result, Failure):
-            print(f"Error adding objective: {objective_result.failure()}")
             return objective_result
 
         # Create solver
@@ -375,8 +372,4 @@ def solve_problem(problem: Problem) -> Result[Solution, str]:
             )
         )
     except Exception as e:
-        print(f"Error in solve_problem: {e!s}")
-        import traceback
-
-        traceback.print_exc()
         return Failure(f"Error solving problem: {e!s}")
