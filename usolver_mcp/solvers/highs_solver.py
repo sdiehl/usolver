@@ -160,6 +160,10 @@ def solve_problem(problem: HiGHSProblem) -> Result[HiGHSOutput, str]:
         # Create HiGHs instance
         h = highspy.Highs()
 
+        # Always disable output for MCP server compatibility
+        h.setOptionValue("output_flag", False)
+        h.setOptionValue("log_to_console", False)
+
         # Apply options
         options_result = _apply_options(h, problem.options)
         if isinstance(options_result, Failure):
