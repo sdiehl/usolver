@@ -33,6 +33,11 @@ jobs:
       run: |
         uv run ruff check .
 
+    - name: Run pytest
+      run: |
+        . .venv/bin/activate
+        uv run pytest
+
     - name: Test build
       run: |
         . .venv/bin/activate

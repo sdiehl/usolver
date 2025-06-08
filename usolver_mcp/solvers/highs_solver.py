@@ -1,29 +1,18 @@
+import highspy
 import numpy as np
 from returns.result import Failure, Result, Success
 
-try:
-    import highspy
-except ImportError:
-    highspy = None
-
 from usolver_mcp.models.highs_models import (
     HiGHSConstraintSense,
+    HiGHSOptions,
     HiGHSOutput,
     HiGHSProblem,
     HiGHSProblemSpec,
     HiGHSSense,
     HiGHSStatus,
+    HiGHSVariable,
     HiGHSVariableType,
 )
-
-
-def _check_highs_available() -> Result[None, str]:
-    """Check if HiGHs is available."""
-    if highspy is None:
-        return Failure(
-            "HiGHs is not installed. Please install it with: pip install highspy"
-        )
-    return Success(None)
 
 
 def _convert_sense_to_highs(sense: HiGHSSense) -> int:
@@ -46,7 +35,7 @@ def _convert_constraint_sense(
             return (rhs, rhs)
 
 
-def _get_variable_bounds(var_spec, var_index: int) -> tuple[float, float]:
+def _get_variable_bounds(var_spec: HiGHSVariable, var_index: int) -> tuple[float, float]:
     """Get variable bounds, applying defaults based on variable type."""
     inf = highspy.kHighsInf
 
@@ -92,7 +81,7 @@ def _build_constraint_matrix(
         return Failure(f"Error building constraint matrix: {e}")
 
 
-def _apply_options(h: "highspy.Highs", options) -> Result[None, str]:
+def _apply_options(h: "highspy.Highs", options: HiGHSOptions | None) -> Result[None, str]:
     """Apply solver options to HiGHs instance."""
     try:
         if options is None:
@@ -146,7 +135,7 @@ def _apply_options(h: "highspy.Highs", options) -> Result[None, str]:
         return Failure(f"Error applying options: {e}")
 
 
-def _convert_status(model_status) -> HiGHSStatus:
+def _convert_status(model_status: "highspy.HighsModelStatus") -> HiGHSStatus:
     """Convert HiGHs model status to HiGHSStatus enum."""
     # HiGHs status constants
     if model_status == highspy.HighsModelStatus.kOptimal:
@@ -164,11 +153,6 @@ def _convert_status(model_status) -> HiGHSStatus:
 def solve_problem(problem: HiGHSProblem) -> Result[HiGHSOutput, str]:
     """Solve a HiGHs optimization problem."""
     try:
-        # Check if HiGHs is available
-        check_result = _check_highs_available()
-        if isinstance(check_result, Failure):
-            return check_result
-
         # Create HiGHs instance
         h = highspy.Highs()
 
@@ -234,8 +218,7 @@ def solve_problem(problem: HiGHSProblem) -> Result[HiGHSOutput, str]:
             unique_rows = np.unique(rows)
             start_array = np.zeros(num_constraints + 1, dtype=int)
 
-            for i, row in enumerate(unique_rows):
-                mask = rows == row
+            for row in unique_rows:
                 start_array[row] = np.sum(rows < row)
 
             start_array[-1] = len(rows)  # Final start
