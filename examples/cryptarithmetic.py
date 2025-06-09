@@ -10,12 +10,6 @@ Where each letter represents a unique digit (0-9), and leading letters cannot be
 
 This implementation uses Z3 SMT solver to handle the logical constraints and arithmetic
 relationships between the letter-digit mappings.
-
-Example usage:
-    python cryptarithmetic.py
-
-For testing:
-    pytest cryptarithmetic.py::test_cryptarithmetic_solver -v
 """
 
 import logging
