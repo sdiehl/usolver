@@ -223,6 +223,19 @@ def solve_problem(problem: HiGHSProblem) -> Result[HiGHSOutput, str]:
             np.array([]),
         )
 
+        # Set variable integrality constraints
+        integrality = np.zeros(num_vars, dtype=int)  # 0 = continuous
+        for i, var_spec in enumerate(problem_spec.variables):
+            if var_spec.type == HiGHSVariableType.BINARY:
+                integrality[i] = 1  # 1 = integer (binary is integer with bounds 0-1)
+            elif var_spec.type == HiGHSVariableType.INTEGER:
+                integrality[i] = 1  # 1 = integer
+            # else: continuous (already 0)
+        
+        # Apply integrality constraints if any variables are integer/binary
+        if np.any(integrality > 0):
+            h.changeColsIntegrality(num_vars, np.arange(num_vars), integrality)
+
         # Add constraints using sparse format
         if len(rows) > 0:
             # Convert to row-wise sparse format for HiGHs
@@ -297,3 +310,112 @@ def solve_problem(problem: HiGHSProblem) -> Result[HiGHSOutput, str]:
 
     except Exception as e:
         return Failure(f"Error solving HiGHs problem: {e}")
+
+
+def simple_highs_solver(
+    sense: str,
+    objective_coeffs: list[float],
+    variables: list[dict],
+    constraint_matrix: list[list[float]],
+    constraint_senses: list[str],
+    rhs_values: list[float],
+    options: dict | None = None,
+    description: str = "",
+) -> Result[HiGHSOutput, str]:
+    """A simplified interface for solving HiGHs linear programming problems.
+
+    This function provides a more straightforward interface for HiGHs problems,
+    without requiring the full HiGHSProblem model structure.
+
+    Args:
+        sense: Optimization sense, either "minimize" or "maximize"
+        objective_coeffs: List of objective function coefficients
+        variables: List of variable definitions with optional bounds and types
+        constraint_matrix: 2D list representing the constraint matrix (dense format)
+        constraint_senses: List of constraint directions ("<=", ">=", "=")
+        rhs_values: List of right-hand side values for constraints
+        options: Optional solver options dictionary
+        description: Optional description of the problem
+
+    Returns:
+        Result containing HiGHSOutput or error message
+    """
+    try:
+        from usolver_mcp.models.highs_models import (
+            HiGHSConstraints,
+            HiGHSObjective,
+            HiGHSProblem,
+            HiGHSProblemSpec,
+        )
+
+        # Validate sense
+        try:
+            problem_sense = HiGHSSense(sense)
+        except ValueError:
+            return Failure(
+                f"Invalid sense: {sense}. "
+                f"Must be one of: {', '.join([s.value for s in HiGHSSense])}"
+            )
+
+        # Create objective
+        objective = HiGHSObjective(linear=objective_coeffs)
+
+        # Create variables
+        problem_variables = []
+        for i, var in enumerate(variables):
+            var_name = var.get("name", f"x{i+1}")
+            var_lb = var.get("lb", 0.0)
+            var_ub = var.get("ub", None)
+            var_type_str = var.get("type", "cont")
+
+            try:
+                var_type = HiGHSVariableType(var_type_str)
+            except ValueError:
+                return Failure(
+                    f"Invalid variable type: {var_type_str}. "
+                    f"Must be one of: {', '.join([t.value for t in HiGHSVariableType])}"
+                )
+
+            problem_variables.append(
+                HiGHSVariable(name=var_name, lb=var_lb, ub=var_ub, type=var_type)
+            )
+
+        # Create constraints
+        constraint_sense_enums = []
+        for sense_str in constraint_senses:
+            try:
+                constraint_sense_enums.append(HiGHSConstraintSense(sense_str))
+            except ValueError:
+                return Failure(
+                    f"Invalid constraint sense: {sense_str}. "
+                    f"Must be one of: {', '.join([s.value for s in HiGHSConstraintSense])}"
+                )
+
+        constraints = HiGHSConstraints(
+            dense=constraint_matrix,
+            sparse=None,
+            sense=constraint_sense_enums,
+            rhs=rhs_values,
+        )
+
+        # Create problem specification
+        problem_spec = HiGHSProblemSpec(
+            sense=problem_sense,
+            objective=objective,
+            variables=problem_variables,
+            constraints=constraints,
+        )
+
+        # Create options if provided
+        highs_options = None
+        if options:
+            highs_options = HiGHSOptions(**options)
+
+        # Create full problem
+        problem = HiGHSProblem(problem=problem_spec, options=highs_options)
+
+        # Solve the problem
+        return solve_problem(problem)
+
+    except Exception as e:
+        return Failure(f"Error in simple_highs_solver: {e!s}")

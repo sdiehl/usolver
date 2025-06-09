@@ -35,6 +35,11 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "B", "I", "N", "UP", "ANN", "RUF"]
 
+[tool.pytest.ini_options]
+testpaths = ["tests", "examples"]
+python_files = ["test_*.py", "*_test.py", "*.py"]
+python_functions = ["test_*"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["usolver_mcp"]
 
