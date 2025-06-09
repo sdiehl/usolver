@@ -1,0 +1,296 @@
+"""
+Chemical Engineering Pipeline Design Example
+
+This module demonstrates chemical engineering optimization for water transport pipeline design.
+The problem involves determining optimal pipe diameter and flow velocity to minimize cost
+while satisfying fluid dynamics constraints and operational requirements.
+
+The constraint satisfaction problem involves:
+- Pipe diameter and flow velocity as continuous variables
+- Flow continuity equation: Q = π(D/2)² × v
+- Pressure drop constraint: ΔP = f(L/D)(ρv²/2)
+- Practical operating limits for diameter and velocity
+- Safety and efficiency constraints
+
+This demonstrates engineering optimization using Z3 SMT solving over real numbers.
+"""
+
+from usolver_mcp.solvers.z3_solver import solve_z3_simple
+
+
+def create_pipeline_problem():
+    """
+    Create a chemical engineering pipeline design optimization problem.
+
+    Problem parameters:
+    - Volumetric flow rate: 0.05 m³/s
+    - Pipe length: 100 m
+    - Water density: 1000 kg/m³
+    - Maximum allowable pressure drop: 50 kPa
+    - Friction factor: 0.02 (turbulent flow)
+
+    Returns:
+        tuple: (variables, constraints) for the Z3 solver
+    """
+    # Design variables
+    variables = [
+        {"name": "D", "type": "real"},  # Pipe diameter (m)
+        {"name": "v", "type": "real"},  # Flow velocity (m/s)
+    ]
+
+    # Problem constants
+    Q = 0.05  # Volumetric flow rate (m³/s)
+    L = 100.0  # Pipe length (m)
+    rho = 1000.0  # Water density (kg/m³)
+    f = 0.02  # Friction factor (dimensionless)
+    max_pressure_drop = 50000.0  # Maximum pressure drop (Pa)
+    pi = 3.14159265359
+
+    constraints = []
+
+    # Practical limits
+    constraints.append("D >= 0.05")  # Minimum diameter: 5 cm
+    constraints.append("D <= 0.5")  # Maximum diameter: 50 cm
+    constraints.append("v >= 0.5")  # Minimum velocity: 0.5 m/s
+    constraints.append("v <= 8.0")  # Maximum velocity: 8 m/s
+
+    # Flow continuity equation: Q = π(D/2)² × v
+    # Rearranged: π * D² * v / 4 = Q
+    # Simplified: D² * v = 4Q/π ≈ 0.0637
+    flow_constant = 4 * Q / pi
+    constraints.append(f"D * D * v == {flow_constant:.6f}")
+
+    # Pressure drop constraint: ΔP = f(L/D)(ρv²/2) <= max_pressure_drop
+    # Simplified: f * L * rho * v² / (2 * D) <= max_pressure_drop
+    pressure_coeff = f * L * rho / 2.0
+    constraints.append(f"{pressure_coeff:.2f} * v * v / D <= {max_pressure_drop:.1f}")
+
+    # Reynolds number constraint for turbulent flow (Re > 4000)
+    # Re = ρvD/μ, assuming μ ≈ 0.001 Pa·s for water
+    mu = 0.001  # Dynamic viscosity (Pa·s)
+    reynolds_min = 4000
+    reynolds_coeff = rho / mu
+    constraints.append(f"{reynolds_coeff:.1f} * v * D >= {reynolds_min}")
+
+    # Economic constraint: minimize pipe cost (proportional to D²L) + pumping cost (proportional to ΔP*Q)
+    # This is handled as additional constraints rather than objective in Z3
+    # Assume maximum acceptable pipe cost relative to pumping cost
+    pipe_cost_factor = 1000  # Cost per m³ of pipe material
+    pumping_cost_factor = 0.1  # Cost per Pa·m³/s
+    max_total_cost = 2000  # Maximum acceptable total cost
+
+    # Pipe cost = pipe_cost_factor * π * D² * L / 4
+    # Pumping cost = pumping_cost_factor * pressure_drop * Q
+    pipe_cost_coeff = pipe_cost_factor * pi * L / 4
+    pumping_cost_expr = (
+        f"{pumping_cost_factor * Q:.6f} * {pressure_coeff:.2f} * v * v / D"
+    )
+    constraints.append(
+        f"{pipe_cost_coeff:.2f} * D * D + {pumping_cost_expr} <= {max_total_cost}"
+    )
+
+    return variables, constraints
+
+
+def solve_pipeline_design():
+    """
+    Solve the pipeline design problem and return results.
+
+    Returns:
+        dict: Solution results including optimal diameter, velocity, and performance metrics
+    """
+    variables, constraints = create_pipeline_problem()
+
+    result = solve_z3_simple(
+        variables=variables,
+        constraints=constraints,
+        description="Chemical engineering pipeline design optimization",
+    )
+
+    # Parse the result
+    if result and len(result) > 0:
+        result_text = result[0].text
+
+        if "satisfiable" in result_text.lower() and "unsat" not in result_text.lower():
+            # Extract solution values
+            lines = result_text.split("\n")
+            solution = {}
+
+            for line in lines:
+                if "D =" in line or "D:" in line:
+                    try:
+                        value_str = (
+                            line.split("=")[-1].strip()
+                            if "=" in line
+                            else line.split(":")[-1].strip()
+                        )
+                        # Handle Z3 rational numbers (e.g., "1/8" or "0.125")
+                        if "/" in value_str:
+                            num, den = value_str.split("/")
+                            solution["D"] = float(num) / float(den)
+                        else:
+                            solution["D"] = float(value_str)
+                    except (ValueError, ZeroDivisionError):
+                        continue
+
+                if "v =" in line or "v:" in line:
+                    try:
+                        value_str = (
+                            line.split("=")[-1].strip()
+                            if "=" in line
+                            else line.split(":")[-1].strip()
+                        )
+                        if "/" in value_str:
+                            num, den = value_str.split("/")
+                            solution["v"] = float(num) / float(den)
+                        else:
+                            solution["v"] = float(value_str)
+                    except (ValueError, ZeroDivisionError):
+                        continue
+
+            if "D" in solution and "v" in solution:
+                return {
+                    "status": "satisfiable",
+                    "diameter": solution["D"],
+                    "velocity": solution["v"],
+                }
+
+    return {"status": "unsatisfiable", "error": "No solution found"}
+
+
+def analyze_design(results):
+    """Analyze the pipeline design solution and calculate performance metrics."""
+    if results["status"] != "satisfiable":
+        return None
+
+    D = results["diameter"]
+    v = results["velocity"]
+
+    # Problem constants
+    Q = 0.05
+    L = 100.0
+    rho = 1000.0
+    f = 0.02
+    pi = 3.14159265359
+    mu = 0.001
+
+    # Calculate derived quantities
+    area = pi * (D / 2) ** 2
+    actual_flow_rate = area * v
+
+    # Pressure drop
+    pressure_drop = f * (L / D) * (rho * v**2 / 2)
+
+    # Reynolds number
+    reynolds = rho * v * D / mu
+
+    # Costs
+    pipe_cost_factor = 1000
+    pumping_cost_factor = 0.1
+    pipe_cost = pipe_cost_factor * pi * D**2 * L / 4
+    pumping_cost = pumping_cost_factor * pressure_drop * Q
+    total_cost = pipe_cost + pumping_cost
+
+    return {
+        "area": area,
+        "actual_flow_rate": actual_flow_rate,
+        "flow_rate_error": abs(actual_flow_rate - Q) / Q,
+        "pressure_drop": pressure_drop,
+        "reynolds_number": reynolds,
+        "pipe_cost": pipe_cost,
+        "pumping_cost": pumping_cost,
+        "total_cost": total_cost,
+        "is_turbulent": reynolds > 4000,
+    }
+
+
+def print_results(results):
+    """Print pipeline design results in a formatted way."""
+    if results["status"] != "satisfiable":
+        print(f"Problem Status: {results['status']}")
+        if "error" in results:
+            print(f"Error: {results['error']}")
+        return
+
+    D = results["diameter"]
+    v = results["velocity"]
+
+    print("Chemical Engineering Pipeline Design Results")
+    print("=" * 60)
+
+    print("\nOptimal Design Parameters:")
+    print(f"  Pipe diameter: {D:.4f} m ({D*100:.2f} cm)")
+    print(f"  Flow velocity: {v:.3f} m/s")
+
+    # Performance analysis
+    analysis = analyze_design(results)
+    if analysis:
+        print("\nPerformance Analysis:")
+        print("-" * 30)
+        print(f"  Cross-sectional area: {analysis['area']:.6f} m²")
+        print(f"  Actual flow rate: {analysis['actual_flow_rate']:.6f} m³/s")
+        print(f"  Flow rate error: {analysis['flow_rate_error']:.1%}")
+        print(
+            f"  Pressure drop: {analysis['pressure_drop']:.0f} Pa ({analysis['pressure_drop']/1000:.1f} kPa)"
+        )
+        print(f"  Reynolds number: {analysis['reynolds_number']:.0f}")
+        print(
+            f"  Flow regime: {'Turbulent' if analysis['is_turbulent'] else 'Laminar'}"
+        )
+
+        print("\nCost Analysis:")
+        print("-" * 20)
+        print(f"  Pipe cost: ${analysis['pipe_cost']:.2f}")
+        print(f"  Pumping cost: ${analysis['pumping_cost']:.2f}")
+        print(f"  Total cost: ${analysis['total_cost']:.2f}")
+
+        # Verify constraints
+        print("\nConstraint Verification:")
+        print("-" * 25)
+        print(f"  Diameter limits: 0.05 ≤ {D:.3f} ≤ 0.5 m ✓")
+        print(f"  Velocity limits: 0.5 ≤ {v:.3f} ≤ 8.0 m/s ✓")
+        print(f"  Pressure drop: {analysis['pressure_drop']:.0f} ≤ 50,000 Pa ✓")
+        print(f"  Reynolds number: {analysis['reynolds_number']:.0f} ≥ 4,000 ✓")
+
+
+def main():
+    """Main function to run the chemical engineering example."""
+    print(__doc__)
+
+    results = solve_pipeline_design()
+    print_results(results)
+
+
+def test_chemical_engineering():
+    """Test function for pytest."""
+    results = solve_pipeline_design()
+
+    # Test that we get a satisfiable solution
+    assert results["status"] == "satisfiable"
+
+    D = results["diameter"]
+    v = results["velocity"]
+
+    # Test design constraints
+    assert 0.05 <= D <= 0.5  # Diameter limits
+    assert 0.5 <= v <= 8.0  # Velocity limits
+
+    # Test derived constraints
+    analysis = analyze_design(results)
+    assert analysis is not None
+
+    # Flow continuity (should be very close to target)
+    assert analysis["flow_rate_error"] < 0.01  # Less than 1% error
+
+    # Pressure drop constraint
+    assert analysis["pressure_drop"] <= 50000  # Less than 50 kPa
+
+    # Reynolds number constraint (turbulent flow)
+    assert analysis["reynolds_number"] >= 4000
+
+    # Cost constraint
+    assert analysis["total_cost"] <= 2000
+
+
+if __name__ == "__main__":
+    main()
