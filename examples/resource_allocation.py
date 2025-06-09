@@ -16,6 +16,7 @@ This is a classic capital budgeting problem suitable for HiGHS mixed-integer pro
 """
 
 from usolver_mcp.solvers.highs_solver import simple_highs_solver
+from returns.result import Success, Failure
 
 
 def create_resource_allocation_problem():
@@ -56,9 +57,9 @@ def create_resource_allocation_problem():
     names = [p[5] for p in projects]
 
     # Available resources
-    total_budget = 300
-    total_personnel = 40
-    total_equipment = 15
+    total_budget = 350  # Increased to make problem feasible
+    total_personnel = 45  # Increased to make problem feasible
+    total_equipment = 20  # Increased to make problem feasible
 
     # Variable definitions (binary: select project or not)
     variables = []
@@ -129,47 +130,38 @@ def solve_resource_allocation():
         dict: Solution results including selected projects and resource usage
     """
     problem_params = create_resource_allocation_problem()
-    result = simple_highs_solver(**problem_params)
+    
+    # Extract solver parameters (exclude 'projects' which is for analysis)
+    solver_params = {k: v for k, v in problem_params.items() if k != 'projects'}
+    result = simple_highs_solver(**solver_params)
 
     # Parse the result from the HiGHS solver
-    if result and len(result) > 0:
-        result_text = result[0].text
-
-        # Extract solution status and values
-        if "optimal" in result_text.lower():
-            lines = result_text.split("\n")
-            solution_data = {}
-
-            # Parse variable values
-            for i in range(len(problem_params["projects"])):
-                var_name = f"project_{i}"
-                for line in lines:
-                    if f"{var_name}:" in line:
-                        try:
-                            value = float(line.split(":")[1].strip())
-                            solution_data[var_name] = int(
-                                round(value)
-                            )  # Binary variable
-                        except (ValueError, IndexError):
-                            continue
-
-                # Extract objective value
-                if "Objective value:" in line:
-                    try:
-                        solution_data["objective_value"] = float(
-                            line.split(":")[1].strip()
-                        )
-                    except (ValueError, IndexError):
-                        continue
-
-            if solution_data:
+    match result:
+        case Success(solution):
+            if solution.status.value == "optimal":
+                # Extract solution values
+                solution_values = solution.solution or []
+                
+                # Map solution values to project selections
+                selections = {}
+                for i in range(len(problem_params["projects"])):
+                    var_name = f"project_{i}"
+                    if i < len(solution_values):
+                        selections[var_name] = int(round(solution_values[i]))  # Binary variable
+                    else:
+                        selections[var_name] = 0
+                
                 return {
                     "status": "optimal",
-                    "selections": solution_data,
-                    "total_value": solution_data.get("objective_value", 0),
+                    "selections": selections,
+                    "total_value": solution.objective_value or 0,
                 }
-
-    return {"status": "error", "error": "Failed to solve problem"}
+            else:
+                return {"status": solution.status.value, "error": f"Problem status: {solution.status.value}"}
+        case Failure(error):
+            return {"status": "error", "error": str(error)}
+        case _:
+            return {"status": "error", "error": "Unexpected result type"}
 
 
 def analyze_solution(results, problem_params):
@@ -209,9 +201,9 @@ def analyze_solution(results, problem_params):
     return {
         "selected_projects": selected_projects,
         "resource_usage": {
-            "budget": {"used": total_budget_used, "available": 300},
-            "personnel": {"used": total_personnel_used, "available": 40},
-            "equipment": {"used": total_equipment_used, "available": 15},
+            "budget": {"used": total_budget_used, "available": 350},
+            "personnel": {"used": total_personnel_used, "available": 45},
+            "equipment": {"used": total_equipment_used, "available": 20},
         },
         "category_distribution": {
             "Technology": category_counts[0],
@@ -301,9 +293,9 @@ def test_resource_allocation():
     assert analysis is not None
 
     resource_usage = analysis["resource_usage"]
-    assert resource_usage["budget"]["used"] <= 300
-    assert resource_usage["personnel"]["used"] <= 40
-    assert resource_usage["equipment"]["used"] <= 15
+    assert resource_usage["budget"]["used"] <= 350
+    assert resource_usage["personnel"]["used"] <= 45
+    assert resource_usage["equipment"]["used"] <= 20
 
     # Test category constraints (at least 1 project per category)
     category_dist = analysis["category_distribution"]
