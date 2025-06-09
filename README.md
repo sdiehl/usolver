@@ -34,6 +34,7 @@ To run the individual solver examples. You can invoke the individual examples. B
 - **[Coin Problem](examples/coin_problem.py)** - Classic logic puzzle using Z3 to find which 6 US coins total $1.15 but cannot make change for various denominations
 - **[Cryptarithmetic](examples/cryptarithmetic.py)** - Solve cryptarithmetic puzzles like SEND + MORE = MONEY using Z3 constraint programming
 - **[Knapsack Problem](examples/knapsack.py)** - Classic 0/1 knapsack optimization using OR-Tools to maximize value within weight constraints
+- **[Multilinear Optimization](examples/multilinear.py)** - Linear programming with mixed constraints using Z3 to minimize objective functions subject to linear inequalities
 - **[N-Queens](examples/nqueens.py)** - Place N queens on an N×N chessboard using OR-Tools constraint programming with no attacking positions
 - **[Sparse Solver](examples/sparse_solver.py)** - Large-scale optimization demonstrating sparse matrix formats for memory-efficient resource allocation across facilities and time periods
 
@@ -197,6 +198,44 @@ Use usolver to design a water transport pipeline with the following requirements
 * Practical limits: 0.05 ≤ D ≤ 0.5 m, 0.5 ≤ v ≤ 8 m/s
 * Pressure constraint: ΔP ≤ 50,000 Pa
 * Find: optimal pipe diameter and flow velocity
+```
+
+### Linear Programming
+
+A multilinear optimization example:
+
+```markdown
+Use usolver to solve the following linear programming problem:
+
+Minimize: 12x + 20y
+Subject to: 6x + 8y ≥ 100
+           7x + 12y ≥ 120
+           x ≥ 0
+           y ∈ [0, 3]
+```
+
+This is compiled by the language model down into a constraint satisfaction problem that can be solved with Z3.
+
+$$
+\begin{aligned}
+\text{minimize} \quad & 12x + 20y \\
+\text{subject to} \quad & 6x + 8y \geq 100 \\
+& 7x + 12y \geq 120 \\
+& x \geq 0 \\
+& y \in [0, 3]
+\end{aligned}
+$$
+
+Where:
+- $x$ = First decision variable (continuous, non-negative)
+- $y$ = Second decision variable (continuous, bounded)
+
+The optimal solution is:
+
+```markdown
+x = 15.0
+y = 1.25
+Objective value = 205.0
 ```
 
 ### CVXPY
