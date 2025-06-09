@@ -23,8 +23,10 @@ from usolver_mcp.models.highs_models import (
     HiGHSProblemSpec,
     HiGHSSparseMatrix,
     HiGHSVariable,
+    HiGHSStatus,
 )
-from usolver_mcp.solvers.highs_solver import solve_highs_problem
+from usolver_mcp.solvers.highs_solver import solve_problem
+from returns.result import Success
 
 
 def create_sparse_problem():
@@ -162,29 +164,15 @@ def solve_sparse_optimization():
         dict: Solution results including allocations and analysis
     """
     problem = create_sparse_problem()
-    result = solve_highs_problem(problem)
+    result = solve_problem(problem)
 
     # Parse the result
-    if result and len(result) > 0:
-        result_text = result[0].text
-
-        if "optimal" in result_text.lower():
-            lines = result_text.split("\n")
-
-            # Extract objective value
-            objective_value = None
-            for line in lines:
-                if "Objective value:" in line or "objective:" in line.lower():
-                    try:
-                        objective_value = float(line.split(":")[-1].strip())
-                        break
-                    except (ValueError, IndexError):
-                        continue
-
-            # For large problems, we'll analyze the structure rather than parse all variables
+    if isinstance(result, Success):
+        solution = result.unwrap()
+        if solution.status == HiGHSStatus.OPTIMAL:
             return {
                 "status": "optimal",
-                "objective_value": objective_value,
+                "objective_value": solution.objective_value,
                 "problem_size": {
                     "variables": 240,  # 20 facilities × 12 periods
                     "constraints": 33,  # 20 facility + 12 demand + 1 budget
@@ -192,9 +180,9 @@ def solve_sparse_optimization():
                 },
             }
         else:
-            return {"status": "failed", "error": "Non-optimal solution"}
-
-    return {"status": "error", "error": "Failed to solve problem"}
+            return {"status": "failed", "error": f"Non-optimal solution: {solution.status}"}
+    else:
+        return {"status": "error", "error": "Failed to solve problem"}
 
 
 def analyze_sparsity():
