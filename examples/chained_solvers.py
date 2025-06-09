@@ -74,25 +74,25 @@ def create_table_layout_problem():
     constraints = [
         # Space constraint (floor area in square meters)
         Constraint(
-            expression="4*tables_2_seater + 6*tables_4_seater + 9*tables_6_seater <= 150",
+            expression="model.add(4*tables_2_seater + 6*tables_4_seater + 9*tables_6_seater <= 150)",
             description="Total floor space constraint (150 sq meters)",
         ),
         # Maximum number of tables (operational constraint)
         Constraint(
-            expression="tables_2_seater + tables_4_seater + tables_6_seater <= 20",
+            expression="model.add(tables_2_seater + tables_4_seater + tables_6_seater <= 20)",
             description="Maximum number of tables constraint",
         ),
         # Ensure a minimum mix of table sizes for variety
         Constraint(
-            expression="tables_2_seater >= 2",
+            expression="model.add(tables_2_seater >= 2)",
             description="Minimum number of 2-seater tables",
         ),
         Constraint(
-            expression="tables_4_seater >= 3",
+            expression="model.add(tables_4_seater >= 3)",
             description="Minimum number of 4-seater tables",
         ),
         Constraint(
-            expression="tables_6_seater >= 1",
+            expression="model.add(tables_6_seater >= 1)",
             description="Minimum number of 6-seater tables",
         ),
     ]
@@ -343,14 +343,14 @@ def validate_solution(results):
     # Validate staff scheduling
     staff_per_hour = staff_results["staff_per_hour"]
 
-    # Check minimum staffing
-    if any(staff < 2 for staff in staff_per_hour):
+    # Check minimum staffing (allow small numerical error)
+    if any(staff < 1.99 for staff in staff_per_hour):
         return False
 
     # Check smooth transitions (max 2 people change)
     for i in range(len(staff_per_hour) - 1):
         if (
-            abs(staff_per_hour[i + 1] - staff_per_hour[i]) > 2.1
+            abs(staff_per_hour[i + 1] - staff_per_hour[i]) > 2.01
         ):  # Allow small numerical error
             return False
 
@@ -393,9 +393,9 @@ def test_chained_solvers():
     assert staff_results["status"] == "optimal"
     assert staff_results["total_daily_cost"] > 0
 
-    # Test staff constraints
+    # Test staff constraints (allow small numerical error)
     staff_per_hour = staff_results["staff_per_hour"]
-    assert all(staff >= 2 for staff in staff_per_hour)  # Minimum 2 staff
+    assert all(staff >= 1.99 for staff in staff_per_hour)  # Minimum 2 staff
 
     # Test solution validation
     assert validate_solution(results)
