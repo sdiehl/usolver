@@ -55,7 +55,7 @@ def create_nqueens_problem(n=8, find_all_solutions=False):
     # This is automatically handled by the AllDifferent constraint
     constraints.append(
         Constraint(
-            expression="model.AddAllDifferent([queens[i] for i in range(n)])",
+            expression=f"model.AddAllDifferent([queens[i] for i in range({n})])",
             description="All queens must be in different columns",
         )
     )
@@ -68,7 +68,7 @@ def create_nqueens_problem(n=8, find_all_solutions=False):
     # Positive diagonal constraint
     constraints.append(
         Constraint(
-            expression="model.AddAllDifferent([queens[i] + i for i in range(n)])",
+            expression=f"model.AddAllDifferent([queens[i] + i for i in range({n})])",
             description="No two queens on the same positive diagonal",
         )
     )
@@ -76,7 +76,7 @@ def create_nqueens_problem(n=8, find_all_solutions=False):
     # Negative diagonal constraint
     constraints.append(
         Constraint(
-            expression="model.AddAllDifferent([queens[i] - i for i in range(n)])",
+            expression=f"model.AddAllDifferent([queens[i] - i for i in range({n})])",
             description="No two queens on the same negative diagonal",
         )
     )
@@ -134,8 +134,9 @@ def solve_nqueens(n=8, find_all_solutions=False):
                     "status": solution.status,
                     "error": f"No solution found for {n}-Queens",
                 }
-        case _:
-            return {"status": "error", "error": f"Failed to solve {n}-Queens problem"}
+        case failure:
+            error_msg = failure.failure() if hasattr(failure, 'failure') else str(failure)
+            return {"status": "error", "error": f"Failed to solve {n}-Queens problem: {error_msg}"}
 
 
 def create_board_representation(queens, n):
