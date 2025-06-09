@@ -1,21 +1,22 @@
 """
 Transportation/Logistics Optimization Example
 
-This module demonstrates transportation network optimization for a supply chain.
-The problem involves minimizing transportation costs while meeting supply and demand
-constraints across a network of suppliers, warehouses, and customers.
+This module demonstrates transportation and logistics optimization for a supply chain network.
+The problem involves determining optimal flow quantities through a multi-stage network
+to minimize total transportation costs while satisfying supply constraints, demand requirements,
+and flow conservation at intermediate nodes.
 
 The linear programming problem minimizes total transportation cost subject to:
-- Supply constraints at suppliers (cannot exceed available supply)
-- Demand constraints at customers (must meet minimum demand)
-- Flow conservation at warehouses (inflow = outflow)
+- Supply capacity constraints at suppliers
+- Demand requirements at customers
+- Flow conservation at warehouses (intermediate nodes)
 - Non-negativity constraints on all flows
-- Optional capacity constraints on transportation routes
 
-This is a classic transportation problem suitable for HiGHS linear programming.
+This is a classic transportation/transshipment problem suitable for HiGHS.
 """
 
 from usolver_mcp.solvers.highs_solver import simple_highs_solver
+from returns.result import Success, Failure
 
 
 def create_logistics_problem():
@@ -106,50 +107,36 @@ def solve_logistics_optimization():
     result = simple_highs_solver(**problem_params)
 
     # Parse the result from the HiGHS solver
-    if result and len(result) > 0:
-        result_text = result[0].text
-
-        # Extract solution status and values
-        if "optimal" in result_text.lower():
-            lines = result_text.split("\n")
-            solution_data = {}
-
-            # Parse variable values
-            flow_vars = [
-                "S1_W1",
-                "S1_W2",
-                "S2_W1",
-                "S2_W2",
-                "W1_C1",
-                "W1_C2",
-                "W2_C1",
-                "W2_C2",
-            ]
-            for line in lines:
-                for var in flow_vars:
-                    if f"{var}:" in line:
-                        try:
-                            solution_data[var] = float(line.split(":")[1].strip())
-                        except (ValueError, IndexError):
-                            continue
-
-                # Extract objective value
-                if "Objective value:" in line:
-                    try:
-                        solution_data["objective_value"] = float(
-                            line.split(":")[1].strip()
-                        )
-                    except (ValueError, IndexError):
-                        continue
-
-            if solution_data:
+    match result:
+        case Success(solution):
+            if solution.status.value == "optimal":
+                # Extract solution values
+                flows_list = solution.solution or []
+                
+                # Map solution values to flow variables
+                flow_vars = [
+                    "S1_W1", "S1_W2", "S2_W1", "S2_W2", 
+                    "W1_C1", "W1_C2", "W2_C1", "W2_C2"
+                ]
+                
+                flows = {}
+                for i, var_name in enumerate(flow_vars):
+                    if i < len(flows_list):
+                        flows[var_name] = flows_list[i]
+                    else:
+                        flows[var_name] = 0.0
+                
                 return {
                     "status": "optimal",
-                    "flows": solution_data,
-                    "total_cost": solution_data.get("objective_value", 0),
+                    "flows": flows,
+                    "total_cost": solution.objective_value or 0,
                 }
-
-    return {"status": "error", "error": "Failed to solve problem"}
+            else:
+                return {"status": solution.status.value, "error": f"Problem status: {solution.status.value}"}
+        case Failure(error):
+            return {"status": "error", "error": str(error)}
+        case _:
+            return {"status": "error", "error": "Unexpected result type"}
 
 
 def analyze_solution(results, problem_params):
