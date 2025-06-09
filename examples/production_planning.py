@@ -18,6 +18,7 @@ This is a classic linear programming problem suitable for HiGHS.
 
 
 from usolver_mcp.solvers.highs_solver import simple_highs_solver
+from returns.result import Success, Failure
 
 
 def create_production_problem():
@@ -81,36 +82,27 @@ def solve_production_planning():
     result = simple_highs_solver(**problem_params)
 
     # Parse the result from the HiGHS solver
-    if result and len(result) > 0:
-        result_text = result[0].text
-
-        # Extract solution status and values
-        if "optimal" in result_text.lower():
-            lines = result_text.split("\n")
-            solution_data = {}
-
-            for line in lines:
-                if "ProductA:" in line:
-                    solution_data["ProductA"] = float(line.split(":")[1].strip())
-                elif "ProductB:" in line:
-                    solution_data["ProductB"] = float(line.split(":")[1].strip())
-                elif "ProductC:" in line:
-                    solution_data["ProductC"] = float(line.split(":")[1].strip())
-                elif "Objective value:" in line:
-                    solution_data["objective_value"] = float(line.split(":")[1].strip())
-
-            if solution_data:
-                return {
-                    "status": "optimal",
-                    "production_quantities": [
-                        solution_data.get("ProductA", 0),
-                        solution_data.get("ProductB", 0),
-                        solution_data.get("ProductC", 0),
-                    ],
-                    "total_profit": solution_data.get("objective_value", 0),
-                }
-
-    return {"status": "error", "error": "Failed to solve problem"}
+    match result:
+        case Success(solution):
+            if solution.status.value == "optimal":
+                # Extract solution values
+                production_quantities = solution.solution or []
+                
+                # Ensure we have 3 values for the 3 products
+                if len(production_quantities) >= 3:
+                    return {
+                        "status": "optimal",
+                        "production_quantities": production_quantities[:3],
+                        "total_profit": solution.objective_value or 0,
+                    }
+                else:
+                    return {"status": "error", "error": "Incomplete solution"}
+            else:
+                return {"status": solution.status.value, "error": f"Problem status: {solution.status.value}"}
+        case Failure(error):
+            return {"status": "error", "error": str(error)}
+        case _:
+            return {"status": "error", "error": "Unexpected result type"}
 
 
 def analyze_solution(results, problem_params):
