@@ -21,20 +21,20 @@ Then open Claude or Cursor and you should see the MCP tool `usolver` available i
 
 ## Examples
 
-To run the individual solver examples. You can invoke the individual examples. Below are example prompts that you can feed to the language model for these specific problems.
+To run the individual solver examples. You can invoke the individual examples. Below are example using the solvers, and each module contains a docstring which can be used to prompt the language model to solve the problem.
 
 - **[Chemical Engineering](examples/chemical_engineering.py)** - Pipeline design optimization using Z3 SMT solver for fluid transport systems with flow continuity, pressure drop, and economic constraints
 - **[Chained Solvers](examples/chained_solvers.py)** - Multi-stage restaurant optimization combining OR-Tools for table layout and CVXPY for staff scheduling
-- **[Coin Problem](examples/coin_problem.py)** - Classic logic puzzle using Z3 to find which 6 US coins total $1.15 but cannot make change for various denominations
-- **[Cryptarithmetic](examples/cryptarithmetic.py)** - Solve cryptarithmetic puzzles like SEND + MORE = MONEY using Z3 constraint programming
 - **[Job Shop Scheduling](examples/job_shop.py)** - Complex scheduling problem using OR-Tools to minimize makespan while respecting operation precedence and machine capacity
-- **[Knapsack Problem](examples/knapsack.py)** - Classic 0/1 knapsack optimization using OR-Tools to maximize value within weight constraints
 - **[Logistics](examples/logistics.py)** - Transportation network optimization using HiGHS to minimize shipping costs in multi-stage supply chains
-- **[N-Queens](examples/nqueens.py)** - Place N queens on an N×N chessboard using OR-Tools constraint programming with no attacking positions
 - **[Nurse Scheduling](examples/nurse_scheduling.py)** - Hospital staff scheduling using OR-Tools to assign nurses to shifts with fairness and availability constraints
 - **[Portfolio Theory](examples/portfolio_theory.py)** - Modern portfolio optimization using CVXPY to maximize returns while constraining risk across asset classes
 - **[Production Planning](examples/production_planning.py)** - Manufacturing optimization using HiGHS to maximize profit subject to machine, labor, and material constraints
 - **[Resource Allocation](examples/resource_allocation.py)** - Project portfolio selection using HiGHS mixed-integer programming to maximize value within budget and resource limits
+- **[Coin Problem](examples/coin_problem.py)** - Classic logic puzzle using Z3 to find which 6 US coins total $1.15 but cannot make change for various denominations
+- **[Cryptarithmetic](examples/cryptarithmetic.py)** - Solve cryptarithmetic puzzles like SEND + MORE = MONEY using Z3 constraint programming
+- **[Knapsack Problem](examples/knapsack.py)** - Classic 0/1 knapsack optimization using OR-Tools to maximize value within weight constraints
+- **[N-Queens](examples/nqueens.py)** - Place N queens on an N×N chessboard using OR-Tools constraint programming with no attacking positions
 - **[Sparse Solver](examples/sparse_solver.py)** - Large-scale optimization demonstrating sparse matrix formats for memory-efficient resource allocation across facilities and time periods
 
 ### Logic Puzzle
