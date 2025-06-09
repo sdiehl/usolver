@@ -15,8 +15,9 @@ The mixed-integer programming problem involves:
 This is a classic capital budgeting problem suitable for HiGHS mixed-integer programming.
 """
 
+from returns.result import Failure, Success
+
 from usolver_mcp.solvers.highs_solver import simple_highs_solver
-from returns.result import Success, Failure
 
 
 def create_resource_allocation_problem():
@@ -130,9 +131,9 @@ def solve_resource_allocation():
         dict: Solution results including selected projects and resource usage
     """
     problem_params = create_resource_allocation_problem()
-    
+
     # Extract solver parameters (exclude 'projects' which is for analysis)
-    solver_params = {k: v for k, v in problem_params.items() if k != 'projects'}
+    solver_params = {k: v for k, v in problem_params.items() if k != "projects"}
     result = simple_highs_solver(**solver_params)
 
     # Parse the result from the HiGHS solver
@@ -141,23 +142,28 @@ def solve_resource_allocation():
             if solution.status.value == "optimal":
                 # Extract solution values
                 solution_values = solution.solution or []
-                
+
                 # Map solution values to project selections
                 selections = {}
                 for i in range(len(problem_params["projects"])):
                     var_name = f"project_{i}"
                     if i < len(solution_values):
-                        selections[var_name] = int(round(solution_values[i]))  # Binary variable
+                        selections[var_name] = int(
+                            round(solution_values[i])
+                        )  # Binary variable
                     else:
                         selections[var_name] = 0
-                
+
                 return {
                     "status": "optimal",
                     "selections": selections,
                     "total_value": solution.objective_value or 0,
                 }
             else:
-                return {"status": solution.status.value, "error": f"Problem status: {solution.status.value}"}
+                return {
+                    "status": solution.status.value,
+                    "error": f"Problem status: {solution.status.value}",
+                }
         case Failure(error):
             return {"status": "error", "error": str(error)}
         case _:

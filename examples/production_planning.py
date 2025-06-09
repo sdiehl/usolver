@@ -16,9 +16,9 @@ The linear programming problem maximizes total profit subject to:
 This is a classic linear programming problem suitable for HiGHS.
 """
 
+from returns.result import Failure, Success
 
 from usolver_mcp.solvers.highs_solver import simple_highs_solver
-from returns.result import Success, Failure
 
 
 def create_production_problem():
@@ -87,7 +87,7 @@ def solve_production_planning():
             if solution.status.value == "optimal":
                 # Extract solution values
                 production_quantities = solution.solution or []
-                
+
                 # Ensure we have 3 values for the 3 products
                 if len(production_quantities) >= 3:
                     return {
@@ -98,7 +98,10 @@ def solve_production_planning():
                 else:
                     return {"status": "error", "error": "Incomplete solution"}
             else:
-                return {"status": solution.status.value, "error": f"Problem status: {solution.status.value}"}
+                return {
+                    "status": solution.status.value,
+                    "error": f"Problem status: {solution.status.value}",
+                }
         case Failure(error):
             return {"status": "error", "error": str(error)}
         case _:

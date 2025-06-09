@@ -41,9 +41,17 @@ def solve_job_shop_problem(
         Dictionary containing schedule information if solution found, None otherwise
     """
     try:
-        from usolver_mcp.models.ortools_models import Problem, Variable, VariableType, Constraint, Objective, ObjectiveType
-        from usolver_mcp.solvers.ortools_solver import solve_problem
         from returns.result import Success
+
+        from usolver_mcp.models.ortools_models import (
+            Constraint,
+            Objective,
+            ObjectiveType,
+            Problem,
+            Variable,
+            VariableType,
+        )
+        from usolver_mcp.solvers.ortools_solver import solve_problem
 
         num_jobs = len(jobs_data)
 
@@ -107,7 +115,9 @@ def solve_job_shop_problem(
                 )
 
         # Machine capacity constraints (no two operations on same machine overlap)
-        machine_operations: list[list[tuple[int, int]]] = [[] for _ in range(num_machines)]
+        machine_operations: list[list[tuple[int, int]]] = [
+            [] for _ in range(num_machines)
+        ]
         for job_id, job in enumerate(jobs_data):
             for op_id, (machine, duration) in enumerate(job):
                 machine_operations[machine].append((job_id, op_id))
@@ -131,7 +141,7 @@ def solve_job_shop_problem(
 
                     # Use a large constant M for big-M constraints
                     M = horizon
-                    
+
                     # If bool_var is true, then job1_op1 ends before job2_op2 starts
                     constraints.append(
                         Constraint(
@@ -169,10 +179,7 @@ def solve_job_shop_problem(
             )
 
         # Create objective
-        objective = Objective(
-            type=ObjectiveType.MINIMIZE,
-            expression="makespan"
-        )
+        objective = Objective(type=ObjectiveType.MINIMIZE, expression="makespan")
 
         # Create problem
         problem = Problem(
@@ -188,7 +195,9 @@ def solve_job_shop_problem(
         if isinstance(result, Success):
             solution = result.unwrap()
             if solution.is_feasible:
-                return parse_job_shop_solution_from_values(solution.values, jobs_data, num_machines)
+                return parse_job_shop_solution_from_values(
+                    solution.values, jobs_data, num_machines
+                )
 
         logger.warning("No solution found for job shop problem")
         return None

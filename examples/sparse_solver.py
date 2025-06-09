@@ -16,17 +16,18 @@ This demonstrates the computational advantage of sparse formats for large proble
 where most constraint coefficients are zero.
 """
 
+from returns.result import Success
+
 from usolver_mcp.models.highs_models import (
     HiGHSConstraints,
     HiGHSObjective,
     HiGHSProblem,
     HiGHSProblemSpec,
     HiGHSSparseMatrix,
-    HiGHSVariable,
     HiGHSStatus,
+    HiGHSVariable,
 )
 from usolver_mcp.solvers.highs_solver import solve_problem
-from returns.result import Success
 
 
 def create_sparse_problem():
@@ -180,7 +181,10 @@ def solve_sparse_optimization():
                 },
             }
         else:
-            return {"status": "failed", "error": f"Non-optimal solution: {solution.status}"}
+            return {
+                "status": "failed",
+                "error": f"Non-optimal solution: {solution.status}",
+            }
     else:
         return {"status": "error", "error": "Failed to solve problem"}
 

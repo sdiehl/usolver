@@ -135,8 +135,13 @@ def solve_nqueens(n=8, find_all_solutions=False):
                     "error": f"No solution found for {n}-Queens",
                 }
         case failure:
-            error_msg = failure.failure() if hasattr(failure, 'failure') else str(failure)
-            return {"status": "error", "error": f"Failed to solve {n}-Queens problem: {error_msg}"}
+            error_msg = (
+                failure.failure() if hasattr(failure, "failure") else str(failure)
+            )
+            return {
+                "status": "error",
+                "error": f"Failed to solve {n}-Queens problem: {error_msg}",
+            }
 
 
 def create_board_representation(queens, n):

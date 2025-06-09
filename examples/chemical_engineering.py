@@ -11,9 +11,15 @@ The problem involves designing an optimal pipeline for fluid transport consideri
 This demonstrates engineering optimization using Z3 SMT solving over real numbers.
 """
 
+from returns.result import Failure, Success
+
+from usolver_mcp.models.z3_models import (
+    Z3Constraint,
+    Z3Problem,
+    Z3Variable,
+    Z3VariableType,
+)
 from usolver_mcp.solvers.z3_solver import solve_problem
-from usolver_mcp.models.z3_models import Z3Problem, Z3Variable, Z3Constraint, Z3VariableType
-from returns.result import Success, Failure
 
 
 def create_pipeline_problem():
@@ -104,16 +110,13 @@ def solve_pipeline_design():
         Z3Variable(name=var["name"], type=Z3VariableType(var["type"]))
         for var in variables
     ]
-    
-    z3_constraints = [
-        Z3Constraint(expression=constraint)
-        for constraint in constraints
-    ]
-    
+
+    z3_constraints = [Z3Constraint(expression=constraint) for constraint in constraints]
+
     problem = Z3Problem(
         variables=z3_variables,
         constraints=z3_constraints,
-        description="Chemical engineering pipeline design optimization"
+        description="Chemical engineering pipeline design optimization",
     )
 
     result = solve_problem(problem)
@@ -125,7 +128,7 @@ def solve_pipeline_design():
                 # Extract solution values
                 D = solution.values.get("D")
                 v = solution.values.get("v")
-                
+
                 if D is not None and v is not None:
                     return {
                         "status": "satisfiable",

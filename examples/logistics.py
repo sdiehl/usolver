@@ -15,8 +15,9 @@ The linear programming problem minimizes total transportation cost subject to:
 This is a classic transportation/transshipment problem suitable for HiGHS.
 """
 
+from returns.result import Failure, Success
+
 from usolver_mcp.solvers.highs_solver import simple_highs_solver
-from returns.result import Success, Failure
 
 
 def create_logistics_problem():
@@ -112,27 +113,36 @@ def solve_logistics_optimization():
             if solution.status.value == "optimal":
                 # Extract solution values
                 flows_list = solution.solution or []
-                
+
                 # Map solution values to flow variables
                 flow_vars = [
-                    "S1_W1", "S1_W2", "S2_W1", "S2_W2", 
-                    "W1_C1", "W1_C2", "W2_C1", "W2_C2"
+                    "S1_W1",
+                    "S1_W2",
+                    "S2_W1",
+                    "S2_W2",
+                    "W1_C1",
+                    "W1_C2",
+                    "W2_C1",
+                    "W2_C2",
                 ]
-                
+
                 flows = {}
                 for i, var_name in enumerate(flow_vars):
                     if i < len(flows_list):
                         flows[var_name] = flows_list[i]
                     else:
                         flows[var_name] = 0.0
-                
+
                 return {
                     "status": "optimal",
                     "flows": flows,
                     "total_cost": solution.objective_value or 0,
                 }
             else:
-                return {"status": solution.status.value, "error": f"Problem status: {solution.status.value}"}
+                return {
+                    "status": solution.status.value,
+                    "error": f"Problem status: {solution.status.value}",
+                }
         case Failure(error):
             return {"status": "error", "error": str(error)}
         case _:

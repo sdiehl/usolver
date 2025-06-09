@@ -14,9 +14,15 @@ The constraint satisfaction problem involves:
 This is a classic logic puzzle suitable for Z3 SMT solving.
 """
 
+from returns.result import Failure, Success
+
+from usolver_mcp.models.z3_models import (
+    Z3Constraint,
+    Z3Problem,
+    Z3Variable,
+    Z3VariableType,
+)
 from usolver_mcp.solvers.z3_solver import solve_problem
-from usolver_mcp.models.z3_models import Z3Problem, Z3Variable, Z3Constraint, Z3VariableType
-from returns.result import Success, Failure
 
 
 def create_coin_problem():
@@ -122,16 +128,13 @@ def solve_coin_problem():
         Z3Variable(name=var["name"], type=Z3VariableType(var["type"]))
         for var in variables
     ]
-    
-    z3_constraints = [
-        Z3Constraint(expression=constraint)
-        for constraint in constraints
-    ]
-    
+
+    z3_constraints = [Z3Constraint(expression=constraint) for constraint in constraints]
+
     problem = Z3Problem(
         variables=z3_variables,
         constraints=z3_constraints,
-        description="Coin problem logic puzzle"
+        description="Coin problem logic puzzle",
     )
 
     result = solve_problem(problem)
