@@ -14,7 +14,9 @@ The constraint satisfaction problem involves:
 This is a classic logic puzzle suitable for Z3 SMT solving.
 """
 
-from usolver_mcp.solvers.z3_solver import solve_z3_simple
+from usolver_mcp.solvers.z3_solver import solve_problem
+from usolver_mcp.models.z3_models import Z3Problem, Z3Variable, Z3Constraint, Z3VariableType
+from returns.result import Success, Failure
 
 
 def create_coin_problem():
@@ -49,7 +51,7 @@ def create_coin_problem():
 
     # Each coin must be a valid denomination
     for i in range(1, 7):
-        coin_constraints = " Or ".join([f"c{i} == {coin}" for coin in valid_coins])
+        coin_constraints = ", ".join([f"c{i} == {coin}" for coin in valid_coins])
         constraints.append(f"Or({coin_constraints})")
 
     # The sum of all 6 coins equals 115 cents ($1.15)
@@ -115,37 +117,31 @@ def solve_coin_problem():
     """
     variables, constraints = create_coin_problem()
 
-    result = solve_z3_simple(
-        variables=variables,
-        constraints=constraints,
-        description="Coin problem logic puzzle",
+    # Convert to Z3Problem model
+    z3_variables = [
+        Z3Variable(name=var["name"], type=Z3VariableType(var["type"]))
+        for var in variables
+    ]
+    
+    z3_constraints = [
+        Z3Constraint(expression=constraint)
+        for constraint in constraints
+    ]
+    
+    problem = Z3Problem(
+        variables=z3_variables,
+        constraints=z3_constraints,
+        description="Coin problem logic puzzle"
     )
 
+    result = solve_problem(problem)
+
     # Parse the result
-    if result and len(result) > 0:
-        result_text = result[0].text
-
-        if "satisfiable" in result_text.lower() and "unsat" not in result_text.lower():
-            # Extract solution values
-            lines = result_text.split("\n")
-            solution = {}
-
-            for line in lines:
-                for i in range(1, 7):
-                    if f"c{i} =" in line or f"c{i}:" in line:
-                        try:
-                            value = int(
-                                line.split("=")[-1].strip()
-                                if "=" in line
-                                else line.split(":")[-1].strip()
-                            )
-                            solution[f"c{i}"] = value
-                        except (ValueError, IndexError):
-                            continue
-
-            if len(solution) == 6:
-                # Convert to list and analyze
-                coins = [solution[f"c{i}"] for i in range(1, 7)]
+    match result:
+        case Success(solution):
+            if solution.is_satisfiable:
+                # Extract solution values
+                coins = [solution.values[f"c{i}"] for i in range(1, 7)]
                 coins.sort(reverse=True)  # Sort in descending order
 
                 return {
@@ -154,8 +150,12 @@ def solve_coin_problem():
                     "total_value": sum(coins),
                     "coin_count": len(coins),
                 }
-
-    return {"status": "unsatisfiable", "error": "No solution found"}
+            else:
+                return {"status": "unsatisfiable", "error": "No solution found"}
+        case Failure(error):
+            return {"status": "error", "error": str(error)}
+        case _:
+            return {"status": "error", "error": "Unexpected result type"}
 
 
 def analyze_solution(results):
