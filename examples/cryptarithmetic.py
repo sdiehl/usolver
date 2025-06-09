@@ -38,27 +38,31 @@ def solve_send_more_money() -> dict[str, int] | None:
         Dictionary mapping letters to digits if solution exists, None otherwise
     """
     try:
-        from usolver_mcp.z3_solver import solve_z3_simple
+        from usolver_mcp.models.z3_models import Z3Problem, Z3Variable, Z3VariableType, Z3Constraint
+        from usolver_mcp.solvers.z3_solver import solve_problem
+        from returns.result import Success
 
         # Define variables for each unique letter
         letters = ["S", "E", "N", "D", "M", "O", "R", "Y"]
-        variables = [{"name": letter, "type": "integer"} for letter in letters]
+        variables = [Z3Variable(name=letter, type=Z3VariableType.INTEGER) for letter in letters]
 
         constraints = []
 
         # Each letter is a digit (0-9)
         for letter in letters:
-            constraints.append(f"{letter} >= 0")
-            constraints.append(f"{letter} <= 9")
+            constraints.append(Z3Constraint(expression=f"And({letter} >= 0, {letter} <= 9)"))
 
         # All letters represent different digits
+        different_constraints = []
         for i, letter1 in enumerate(letters):
             for letter2 in letters[i + 1 :]:
-                constraints.append(f"{letter1} != {letter2}")
+                different_constraints.append(f"{letter1} != {letter2}")
+        
+        if different_constraints:
+            constraints.append(Z3Constraint(expression=f"And({', '.join(different_constraints)})"))
 
         # Leading letters cannot be zero
-        constraints.append("S != 0")
-        constraints.append("M != 0")
+        constraints.append(Z3Constraint(expression="And(S != 0, M != 0)"))
 
         # Main arithmetic constraint: SEND + MORE = MONEY
         # Convert words to numbers: SEND = 1000*S + 100*E + 10*N + D
@@ -66,41 +70,25 @@ def solve_send_more_money() -> dict[str, int] | None:
         more_expr = "1000*M + 100*O + 10*R + E"
         money_expr = "10000*M + 1000*O + 100*N + 10*E + Y"
 
-        constraints.append(f"({send_expr}) + ({more_expr}) == ({money_expr})")
+        constraints.append(Z3Constraint(expression=f"({send_expr}) + ({more_expr}) == ({money_expr})"))
 
         logger.info("Solving SEND + MORE = MONEY puzzle...")
-        logger.info("Constraints:")
-        for i, constraint in enumerate(constraints, 1):
-            logger.info(f"  {i}. {constraint}")
 
-        # Solve the constraint system
-        result = solve_z3_simple(
+        # Create problem
+        problem = Z3Problem(
             variables=variables,
             constraints=constraints,
-            description="SEND + MORE = MONEY cryptarithmetic puzzle",
+            description="SEND + MORE = MONEY cryptarithmetic puzzle"
         )
 
-        # Parse the result
-        if result and len(result) > 0:
-            result_text = result[0].text
-            if "sat" in result_text.lower():
-                # Extract variable assignments
-                solution = {}
-                lines = result_text.split("\n")
-                for line in lines:
-                    if "=" in line and any(letter in line for letter in letters):
-                        parts = line.strip().split("=")
-                        if len(parts) == 2:
-                            var_name = parts[0].strip()
-                            value = parts[1].strip()
-                            if var_name in letters:
-                                try:
-                                    solution[var_name] = int(value)
-                                except ValueError:
-                                    continue
+        # Solve the constraint system
+        result = solve_problem(problem)
 
-                if len(solution) == len(letters):
-                    return solution
+        # Parse the result
+        if isinstance(result, Success):
+            solution_obj = result.unwrap()
+            if solution_obj.is_satisfiable and solution_obj.values:
+                return solution_obj.values
 
         logger.warning("No solution found for the puzzle")
         return None
@@ -124,36 +112,45 @@ def solve_general_cryptarithmetic(
         Dictionary mapping letters to digits if solution exists, None otherwise
     """
     try:
-        from usolver_mcp.z3_solver import solve_z3_simple
+        from usolver_mcp.models.z3_models import Z3Problem, Z3Variable, Z3VariableType, Z3Constraint
+        from usolver_mcp.solvers.z3_solver import solve_problem
+        from returns.result import Success
 
         # Find all unique letters
-        all_letters = set()
+        all_letters: set[str] = set()
         for word in words + [result_word]:
             all_letters.update(word.upper())
 
         letters = sorted(list(all_letters))
-        variables = [{"name": letter, "type": "integer"} for letter in letters]
+        variables = [Z3Variable(name=letter, type=Z3VariableType.INTEGER) for letter in letters]
 
         constraints = []
 
         # Each letter is a digit (0-9)
         for letter in letters:
-            constraints.append(f"{letter} >= 0")
-            constraints.append(f"{letter} <= 9")
+            constraints.append(Z3Constraint(expression=f"And({letter} >= 0, {letter} <= 9)"))
 
         # All letters represent different digits
+        different_constraints = []
         for i, letter1 in enumerate(letters):
             for letter2 in letters[i + 1 :]:
-                constraints.append(f"{letter1} != {letter2}")
+                different_constraints.append(f"{letter1} != {letter2}")
+        
+        if different_constraints:
+            constraints.append(Z3Constraint(expression=f"And({', '.join(different_constraints)})"))
 
         # Leading letters cannot be zero
-        leading_letters = set()
+        leading_letters: set[str] = set()
         for word in words + [result_word]:
             if word:
                 leading_letters.add(word[0].upper())
 
+        leading_non_zero = []
         for letter in leading_letters:
-            constraints.append(f"{letter} != 0")
+            leading_non_zero.append(f"{letter} != 0")
+        
+        if leading_non_zero:
+            constraints.append(Z3Constraint(expression=f"And({', '.join(leading_non_zero)})"))
 
         # Build arithmetic constraint
         def word_to_expression(word: str) -> str:
@@ -170,37 +167,25 @@ def solve_general_cryptarithmetic(
         # Sum of all words equals result
         left_side = " + ".join(f"({word_to_expression(word)})" for word in words)
         right_side = word_to_expression(result_word)
-        constraints.append(f"({left_side}) == ({right_side})")
+        constraints.append(Z3Constraint(expression=f"({left_side}) == ({right_side})"))
 
         logger.info(f"Solving {' + '.join(words)} = {result_word} puzzle...")
 
-        # Solve the constraint system
-        result = solve_z3_simple(
+        # Create problem
+        problem = Z3Problem(
             variables=variables,
             constraints=constraints,
-            description=f"Cryptarithmetic: {' + '.join(words)} = {result_word}",
+            description=f"Cryptarithmetic: {' + '.join(words)} = {result_word}"
         )
 
-        # Parse the result
-        if result and len(result) > 0:
-            result_text = result[0].text
-            if "sat" in result_text.lower():
-                solution = {}
-                lines = result_text.split("\n")
-                for line in lines:
-                    if "=" in line and any(letter in line for letter in letters):
-                        parts = line.strip().split("=")
-                        if len(parts) == 2:
-                            var_name = parts[0].strip()
-                            value = parts[1].strip()
-                            if var_name in letters:
-                                try:
-                                    solution[var_name] = int(value)
-                                except ValueError:
-                                    continue
+        # Solve the constraint system
+        result = solve_problem(problem)
 
-                if len(solution) == len(letters):
-                    return solution
+        # Parse the result
+        if isinstance(result, Success):
+            solution_obj = result.unwrap()
+            if solution_obj.is_satisfiable and solution_obj.values:
+                return solution_obj.values
 
         return None
 
