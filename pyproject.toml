@@ -42,6 +42,12 @@ select = ["E", "F", "B", "I", "N", "UP", "ANN", "RUF"]
 testpaths = ["tests", "examples"]
 python_files = ["test_*.py", "*_test.py", "*.py"]
 python_functions = ["test_*"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore::UserWarning:cvxpy.*",
+    "ignore:Type google._upb._message.*:DeprecationWarning",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["usolver_mcp"]

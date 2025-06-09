@@ -12,12 +12,6 @@ The goal is to minimize the total completion time (makespan) while respecting:
 
 This implementation uses OR-Tools constraint programming solver to handle the complex
 scheduling constraints and optimization objectives.
-
-Example usage:
-    python job_shop.py
-
-For testing:
-    pytest job_shop.py::test_job_shop_scheduler -v
 """
 
 import logging
