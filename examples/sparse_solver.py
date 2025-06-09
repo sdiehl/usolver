@@ -35,7 +35,7 @@ def create_sparse_problem():
     Create a large sparse optimization problem.
 
     Problem structure:
-    - 20 facilities × 12 time periods = 240 variables
+    - 20 facilities x 12 time periods = 240 variables
     - Resource capacity constraints per facility
     - Demand constraints per time period
     - Budget constraints
@@ -175,7 +175,7 @@ def solve_sparse_optimization():
                 "status": "optimal",
                 "objective_value": solution.objective_value,
                 "problem_size": {
-                    "variables": 240,  # 20 facilities × 12 periods
+                    "variables": 240,  # 20 facilities x 12 periods
                     "constraints": 33,  # 20 facility + 12 demand + 1 budget
                     "nonzeros": len(problem.problem.constraints.sparse.values),
                 },
@@ -232,7 +232,7 @@ def print_results(results) -> None:
     sparsity_info = analyze_sparsity()
     print("\nSparsity Analysis:")
     print(
-        f"  Matrix size: {sparsity_info['matrix_size'][0]} × {sparsity_info['matrix_size'][1]}"
+        f"  Matrix size: {sparsity_info['matrix_size'][0]} x {sparsity_info['matrix_size'][1]}"
     )
     print(f"  Total elements: {sparsity_info['total_elements']:,}")
     print(f"  Non-zero elements: {sparsity_info['nonzero_elements']:,}")
@@ -294,7 +294,7 @@ def test_sparse_optimization() -> None:
 
     # Test problem dimensions
     problem_size = results["problem_size"]
-    assert problem_size["variables"] == 240  # 20 × 12
+    assert problem_size["variables"] == 240  # 20 x 12
     assert problem_size["constraints"] == 33  # 20 + 12 + 1
     assert problem_size["nonzeros"] > 0
 

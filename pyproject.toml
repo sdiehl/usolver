@@ -35,6 +35,9 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "B", "I", "N", "UP", "ANN", "RUF"]
 
+[tool.ruff.lint.per-file-ignores]
+"examples/*.py" = ["ANN201", "ANN001"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests", "examples"]
 python_files = ["test_*.py", "*_test.py", "*.py"]

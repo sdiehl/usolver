@@ -75,7 +75,7 @@ def solve_job_shop_problem(
         # Variable naming: start_j_o for start time of operation o in job j
         #                 end_j_o for end time of operation o in job j
         for job_id, job in enumerate(jobs_data):
-            for op_id, (machine, duration) in enumerate(job):
+            for op_id, (_machine, duration) in enumerate(job):
                 # Start time variable
                 variables.append(
                     Variable(
@@ -119,7 +119,7 @@ def solve_job_shop_problem(
             [] for _ in range(num_machines)
         ]
         for job_id, job in enumerate(jobs_data):
-            for op_id, (machine, duration) in enumerate(job):
+            for op_id, (machine, _duration) in enumerate(job):
                 machine_operations[machine].append((job_id, op_id))
 
         for _machine_id, operations in enumerate(machine_operations):
@@ -140,12 +140,15 @@ def solve_job_shop_problem(
                     )
 
                     # Use a large constant M for big-M constraints
-                    M = horizon
+                    big_m = horizon
 
                     # If bool_var is true, then job1_op1 ends before job2_op2 starts
                     constraints.append(
                         Constraint(
-                            expression=f"model.add(end_{job1}_{op1} <= start_{job2}_{op2} + {M} * (1 - {bool_var_name}))",
+                            expression=(
+                                f"model.add(end_{job1}_{op1} <= start_{job2}_{op2} + "
+                                f"{big_m} * (1 - {bool_var_name}))"
+                            ),
                             description=f"If {bool_var_name}, then job {job1} op {op1} before job {job2} op {op2}",
                         )
                     )
@@ -153,7 +156,7 @@ def solve_job_shop_problem(
                     # If bool_var is false, then job2_op2 ends before job1_op1 starts
                     constraints.append(
                         Constraint(
-                            expression=f"model.add(end_{job2}_{op2} <= start_{job1}_{op1} + {M} * {bool_var_name})",
+                            expression=f"model.add(end_{job2}_{op2} <= start_{job1}_{op1} + {big_m} * {bool_var_name})",
                             description=f"If not {bool_var_name}, then job {job2} op {op2} before job {job1} op {op1}",
                         )
                     )

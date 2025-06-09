@@ -231,7 +231,7 @@ def solve_problem(problem: HiGHSProblem) -> Result[HiGHSOutput, str]:
             elif var_spec.type == HiGHSVariableType.INTEGER:
                 integrality[i] = 1  # 1 = integer
             # else: continuous (already 0)
-        
+
         # Apply integrality constraints if any variables are integer/binary
         if np.any(integrality > 0):
             h.changeColsIntegrality(num_vars, np.arange(num_vars), integrality)

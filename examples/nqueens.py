@@ -2,11 +2,11 @@
 N-Queens Problem Example
 
 This module solves the classic N-Queens problem using constraint programming.
-The problem involves placing N queens on an N×N chessboard such that no two
+The problem involves placing N queens on an NxN chessboard such that no two
 queens can attack each other (no two queens share the same row, column, or diagonal).
 
 The constraint programming problem involves:
-- N queen positions on an N×N board
+- N queen positions on an NxN board
 - Each row must contain exactly one queen
 - Each column must contain exactly one queen
 - No two queens can be on the same diagonal
@@ -33,7 +33,7 @@ def create_nqueens_problem(n=8, find_all_solutions=False):
     Create an N-Queens constraint programming problem.
 
     Args:
-        n: Size of the chessboard (n×n) and number of queens
+        n: Size of the chessboard (nxn) and number of queens
         find_all_solutions: Whether to enumerate all solutions
 
     Returns:
@@ -90,7 +90,7 @@ def create_nqueens_problem(n=8, find_all_solutions=False):
         variables=[queens],
         constraints=constraints,
         objective=objective,
-        description=f"{n}-Queens problem: place {n} queens on {n}×{n} board with no attacks",
+        description=f"{n}-Queens problem: place {n} queens on {n}x{n} board with no attacks",
         parameters={"enumerate_all_solutions": find_all_solutions, "n": n},
     )
 

@@ -235,7 +235,7 @@ def print_results(results) -> None:
         count = coin_counts[value]
         name = coin_names.get(value, f"{value}-cent")
         plural = "s" if count > 1 else ""
-        print(f"  {count} {name}{plural} ({count} × {value}¢)")
+        print(f"  {count} {name}{plural} ({count} x {value}¢)")
 
     total_cents = sum(coins)
     print(f"\nTotal: {total_cents}¢ = ${total_cents/100:.2f}")

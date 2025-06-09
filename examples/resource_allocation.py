@@ -148,7 +148,9 @@ def solve_resource_allocation():
                 for i in range(len(problem_params["projects"])):
                     var_name = f"project_{i}"
                     if i < len(solution_values):
-                        selections[var_name] = round(solution_values[i])  # Binary variable
+                        selections[var_name] = round(
+                            solution_values[i]
+                        )  # Binary variable
                     else:
                         selections[var_name] = 0
 

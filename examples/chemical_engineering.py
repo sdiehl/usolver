@@ -43,8 +43,8 @@ def create_pipeline_problem():
     ]
 
     # Problem constants
-    Q = 0.05  # Volumetric flow rate (m³/s)
-    L = 100.0  # Pipe length (m)
+    q = 0.05  # Volumetric flow rate (m³/s)
+    length = 100.0  # Pipe length (m)
     rho = 1000.0  # Water density (kg/m³)
     f = 0.02  # Friction factor (dimensionless)
     max_pressure_drop = 50000.0  # Maximum pressure drop (Pa)
@@ -58,19 +58,19 @@ def create_pipeline_problem():
     constraints.append("v >= 0.5")  # Minimum velocity: 0.5 m/s
     constraints.append("v <= 8.0")  # Maximum velocity: 8 m/s
 
-    # Flow continuity equation: Q = π(D/2)² × v
-    # Rearranged: π * D² * v / 4 = Q
-    # Simplified: D² * v = 4Q/π ≈ 0.0637
-    flow_constant = 4 * Q / pi
+    # Flow continuity equation: Q = pi(D/2)^2 * v
+    # Rearranged: pi * D² * v / 4 = Q
+    # Simplified: D² * v = 4Q/pi ≈ 0.0637
+    flow_constant = 4 * q / pi
     constraints.append(f"D * D * v == {flow_constant:.6f}")
 
-    # Pressure drop constraint: ΔP = f(L/D)(ρv²/2) <= max_pressure_drop
+    # Pressure drop constraint: ΔP = f(L/D)(rho*v²/2) <= max_pressure_drop
     # Simplified: f * L * rho * v² / (2 * D) <= max_pressure_drop
-    pressure_coeff = f * L * rho / 2.0
+    pressure_coeff = f * length * rho / 2.0
     constraints.append(f"{pressure_coeff:.2f} * v * v / D <= {max_pressure_drop:.1f}")
 
     # Reynolds number constraint for turbulent flow (Re > 4000)
-    # Re = ρvD/μ, assuming μ ≈ 0.001 Pa·s for water
+    # Re = rho*v*D/mu, assuming mu ≈ 0.001 Pa·s for water
     mu = 0.001  # Dynamic viscosity (Pa·s)
     reynolds_min = 4000
     reynolds_coeff = rho / mu
@@ -83,11 +83,11 @@ def create_pipeline_problem():
     pumping_cost_factor = 0.1  # Cost per Pa·m³/s
     max_total_cost = 6000  # Maximum acceptable total cost (increased to be feasible)
 
-    # Pipe cost = pipe_cost_factor * π * D² * L / 4
+    # Pipe cost = pipe_cost_factor * pi * D² * L / 4
     # Pumping cost = pumping_cost_factor * pressure_drop * Q
-    pipe_cost_coeff = pipe_cost_factor * pi * L / 4
+    pipe_cost_coeff = pipe_cost_factor * pi * length / 4
     pumping_cost_expr = (
-        f"{pumping_cost_factor * Q:.6f} * {pressure_coeff:.2f} * v * v / D"
+        f"{pumping_cost_factor * q:.6f} * {pressure_coeff:.2f} * v * v / D"
     )
     constraints.append(
         f"{pipe_cost_coeff:.2f} * D * D + {pumping_cost_expr} <= {max_total_cost}"
@@ -126,13 +126,13 @@ def solve_pipeline_design():
         case Success(solution):
             if solution.is_satisfiable:
                 # Extract solution values
-                D = solution.values.get("D")
+                diameter = solution.values.get("D")
                 v = solution.values.get("v")
 
-                if D is not None and v is not None:
+                if diameter is not None and v is not None:
                     return {
                         "status": "satisfiable",
-                        "diameter": float(D),
+                        "diameter": float(diameter),
                         "velocity": float(v),
                     }
                 else:
@@ -150,38 +150,38 @@ def analyze_design(results):
     if results["status"] != "satisfiable":
         return None
 
-    D = results["diameter"]
+    diameter = results["diameter"]
     v = results["velocity"]
 
     # Problem constants
-    Q = 0.05
-    L = 100.0
+    q = 0.05
+    length = 100.0
     rho = 1000.0
     f = 0.02
     pi = 3.14159265359
     mu = 0.001
 
     # Calculate derived quantities
-    area = pi * (D / 2) ** 2
+    area = pi * (diameter / 2) ** 2
     actual_flow_rate = area * v
 
     # Pressure drop
-    pressure_drop = f * (L / D) * (rho * v**2 / 2)
+    pressure_drop = f * (length / diameter) * (rho * v**2 / 2)
 
     # Reynolds number
-    reynolds = rho * v * D / mu
+    reynolds = rho * v * diameter / mu
 
     # Costs
     pipe_cost_factor = 1000
     pumping_cost_factor = 0.1
-    pipe_cost = pipe_cost_factor * pi * D**2 * L / 4
-    pumping_cost = pumping_cost_factor * pressure_drop * Q
+    pipe_cost = pipe_cost_factor * pi * diameter**2 * length / 4
+    pumping_cost = pumping_cost_factor * pressure_drop * q
     total_cost = pipe_cost + pumping_cost
 
     return {
         "area": area,
         "actual_flow_rate": actual_flow_rate,
-        "flow_rate_error": abs(actual_flow_rate - Q) / Q,
+        "flow_rate_error": abs(actual_flow_rate - q) / q,
         "pressure_drop": pressure_drop,
         "reynolds_number": reynolds,
         "pipe_cost": pipe_cost,
@@ -199,14 +199,14 @@ def print_results(results) -> None:
             print(f"Error: {results['error']}")
         return
 
-    D = results["diameter"]
+    diameter = results["diameter"]
     v = results["velocity"]
 
     print("Chemical Engineering Pipeline Design Results")
     print("=" * 60)
 
     print("\nOptimal Design Parameters:")
-    print(f"  Pipe diameter: {D:.4f} m ({D*100:.2f} cm)")
+    print(f"  Pipe diameter: {diameter:.4f} m ({diameter*100:.2f} cm)")
     print(f"  Flow velocity: {v:.3f} m/s")
 
     # Performance analysis
@@ -234,7 +234,7 @@ def print_results(results) -> None:
         # Verify constraints
         print("\nConstraint Verification:")
         print("-" * 25)
-        print(f"  Diameter limits: 0.05 ≤ {D:.3f} ≤ 0.5 m ✓")
+        print(f"  Diameter limits: 0.05 ≤ {diameter:.3f} ≤ 0.5 m ✓")
         print(f"  Velocity limits: 0.5 ≤ {v:.3f} ≤ 8.0 m/s ✓")
         print(f"  Pressure drop: {analysis['pressure_drop']:.0f} ≤ 50,000 Pa ✓")
         print(f"  Reynolds number: {analysis['reynolds_number']:.0f} ≥ 4,000 ✓")
@@ -255,11 +255,11 @@ def test_chemical_engineering() -> None:
     # Test that we get a satisfiable solution
     assert results["status"] == "satisfiable"
 
-    D = results["diameter"]
+    diameter = results["diameter"]
     v = results["velocity"]
 
     # Test design constraints
-    assert 0.05 <= D <= 0.5  # Diameter limits
+    assert 0.05 <= diameter <= 0.5  # Diameter limits
     assert 0.5 <= v <= 8.0  # Velocity limits
 
     # Test derived constraints
