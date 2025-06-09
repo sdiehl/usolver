@@ -138,7 +138,7 @@ def solve_general_cryptarithmetic(
 
         # Find all unique letters
         all_letters: set[str] = set()
-        for word in words + [result_word]:
+        for word in [*words, result_word]:
             all_letters.update(word.upper())
 
         letters = sorted(list(all_letters))
@@ -167,7 +167,7 @@ def solve_general_cryptarithmetic(
 
         # Leading letters cannot be zero
         leading_letters: set[str] = set()
-        for word in words + [result_word]:
+        for word in [*words, result_word]:
             if word:
                 leading_letters.add(word[0].upper())
 
@@ -253,7 +253,7 @@ def validate_solution(
             return False
 
         # Check that leading letters are not zero
-        for word in words + [result_word]:
+        for word in [*words, result_word]:
             if word and solution[word[0].upper()] == 0:
                 return False
 
@@ -308,7 +308,7 @@ def print_solution_analysis(
         print("\n✗ Solution is INVALID!")
 
 
-def main():
+def main() -> None:
     """Main function to demonstrate cryptarithmetic puzzle solving."""
     print("USolver Cryptarithmetic Puzzle Solver")
     print("=====================================")
@@ -343,7 +343,7 @@ def main():
         print("No solution found for ONE + ONE = TWO")
 
 
-def test_cryptarithmetic_solver():
+def test_cryptarithmetic_solver() -> None:
     """Test function for pytest compatibility."""
     # Test SEND + MORE = MONEY
     solution1 = solve_send_more_money()

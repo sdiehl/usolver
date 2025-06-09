@@ -57,7 +57,7 @@ def create_knapsack_problem(capacity=100, include_advanced_constraints=False):
     n_items = len(items)
     values = [item[0] for item in items]
     weights = [item[1] for item in items]
-    names = [item[2] for item in items]
+    [item[2] for item in items]
 
     # Decision variables: binary choice for each item
     selected = Variable(
@@ -207,7 +207,7 @@ def analyze_efficiency(results):
     }
 
 
-def print_results(results):
+def print_results(results) -> None:
     """Print knapsack optimization results in a formatted way."""
     if results["status"] != "optimal":
         print(f"Problem Status: {results['status']}")
@@ -253,7 +253,7 @@ def print_results(results):
             print(f"  {display_key}: {value}")
 
 
-def main():
+def main() -> None:
     """Main function to run the knapsack optimization example."""
     print(__doc__)
 
@@ -263,7 +263,7 @@ def main():
     print_results(results)
 
 
-def test_knapsack():
+def test_knapsack() -> None:
     """Test function for pytest."""
     # Test basic knapsack
     results = solve_knapsack(capacity=100)

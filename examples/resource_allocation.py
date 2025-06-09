@@ -55,7 +55,7 @@ def create_resource_allocation_problem():
     personnel = [p[2] for p in projects]
     equipment = [p[3] for p in projects]
     categories = [p[4] for p in projects]
-    names = [p[5] for p in projects]
+    [p[5] for p in projects]
 
     # Available resources
     total_budget = 350  # Increased to make problem feasible
@@ -148,9 +148,7 @@ def solve_resource_allocation():
                 for i in range(len(problem_params["projects"])):
                     var_name = f"project_{i}"
                     if i < len(solution_values):
-                        selections[var_name] = int(
-                            round(solution_values[i])
-                        )  # Binary variable
+                        selections[var_name] = round(solution_values[i])  # Binary variable
                     else:
                         selections[var_name] = 0
 
@@ -220,7 +218,7 @@ def analyze_solution(results, problem_params):
     }
 
 
-def print_results(results, problem_params):
+def print_results(results, problem_params) -> None:
     """Print resource allocation results in a formatted way."""
     if results["status"] != "optimal":
         print(f"Problem Status: {results['status']}")
@@ -277,7 +275,7 @@ def print_results(results, problem_params):
         print(f"{category:<15}: {count} project{'s' if count != 1 else ''}")
 
 
-def main():
+def main() -> None:
     """Main function to run the resource allocation example."""
     print(__doc__)
 
@@ -286,7 +284,7 @@ def main():
     print_results(results, problem_params)
 
 
-def test_resource_allocation():
+def test_resource_allocation() -> None:
     """Test function for pytest."""
     problem_params = create_resource_allocation_problem()
     results = solve_resource_allocation()
@@ -305,7 +303,7 @@ def test_resource_allocation():
 
     # Test category constraints (at least 1 project per category)
     category_dist = analysis["category_distribution"]
-    for category, count in category_dist.items():
+    for _category, count in category_dist.items():
         assert count >= 1
 
     # Test that total value is positive

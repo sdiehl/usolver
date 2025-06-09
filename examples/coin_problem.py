@@ -202,7 +202,7 @@ def analyze_solution(results):
     }
 
 
-def print_results(results):
+def print_results(results) -> None:
     """Print coin problem results in a formatted way."""
     if results["status"] != "satisfiable":
         print(f"Problem Status: {results['status']}")
@@ -257,7 +257,7 @@ def print_results(results):
                 print(f"    Can make {amount}¢ with: {subset}")
 
 
-def main():
+def main() -> None:
     """Main function to run the coin problem example."""
     print(__doc__)
 
@@ -265,7 +265,7 @@ def main():
     print_results(results)
 
 
-def test_coin_problem():
+def test_coin_problem() -> None:
     """Test function for pytest."""
     results = solve_coin_problem()
 

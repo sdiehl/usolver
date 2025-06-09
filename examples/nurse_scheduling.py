@@ -186,7 +186,7 @@ def solve_nurse_scheduling():
             return {"status": "error", "error": "Failed to solve problem"}
 
 
-def print_results(results):
+def print_results(results) -> None:
     """Print nurse scheduling results in a formatted way."""
     if results["status"] != "feasible":
         print(f"Problem Status: {results['status']}")
@@ -223,16 +223,15 @@ def print_results(results):
             print(f"{display_key}: {value}")
 
 
-def validate_schedule(results):
+def validate_schedule(results) -> bool:
     """Validate that the schedule meets all constraints."""
     if results["status"] != "feasible":
         return False
 
     schedule = results["schedule"]
-    nurses = ["Alice", "Bob", "Charlie", "Diana"]
 
     # Check that each shift is assigned
-    for day, shifts_for_day in schedule.items():
+    for _day, shifts_for_day in schedule.items():
         if len(shifts_for_day) != 3:  # Should have 3 shifts per day
             return False
 
@@ -242,14 +241,14 @@ def validate_schedule(results):
 
     # Check workload distribution (2-3 shifts per nurse)
     nurse_shifts = results["nurse_shifts"]
-    for nurse, shifts in nurse_shifts.items():
+    for _nurse, shifts in nurse_shifts.items():
         if not (2 <= shifts <= 3):
             return False
 
     return True
 
 
-def main():
+def main() -> None:
     """Main function to run the nurse scheduling example."""
     print(__doc__)
 
@@ -263,7 +262,7 @@ def main():
         print("\n✗ Schedule validation failed!")
 
 
-def test_nurse_scheduling():
+def test_nurse_scheduling() -> None:
     """Test function for pytest."""
     results = solve_nurse_scheduling()
 
@@ -279,7 +278,7 @@ def test_nurse_scheduling():
 
     # Test workload distribution
     nurse_shifts = results["nurse_shifts"]
-    for nurse, shifts in nurse_shifts.items():
+    for _nurse, shifts in nurse_shifts.items():
         assert 2 <= shifts <= 3  # Each nurse works 2-3 shifts
 
     # Test special constraint: Charlie doesn't work on Tuesday

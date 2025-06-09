@@ -149,7 +149,7 @@ def solve_portfolio_optimization():
             return {"status": "error", "error": "Failed to solve problem"}
 
 
-def print_results(results):
+def print_results(results) -> None:
     """Print portfolio optimization results in a formatted way."""
     if results["status"] != "optimal":
         print(f"Problem Status: {results['status']}")
@@ -177,7 +177,7 @@ def print_results(results):
     print(f"Risk constraint:  {results['portfolio_risk']:7.1%} <= 10.0%")
 
 
-def main():
+def main() -> None:
     """Main function to run the portfolio optimization example."""
     print(__doc__)
 
@@ -185,7 +185,7 @@ def main():
     print_results(results)
 
 
-def test_portfolio_optimization():
+def test_portfolio_optimization() -> None:
     """Test function for pytest."""
     results = solve_portfolio_optimization()
 

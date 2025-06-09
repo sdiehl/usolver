@@ -271,7 +271,7 @@ def solve_chained_optimization():
             }
 
 
-def print_results(results):
+def print_results(results) -> None:
     """Print chained optimization results in a formatted way."""
     print("Chained Solvers Optimization Results")
     print("=" * 60)
@@ -314,7 +314,7 @@ def print_results(results):
     print(f"Minimum staffing: {min_staff:.1f}")
 
 
-def validate_solution(results):
+def validate_solution(results) -> bool:
     """Validate that the chained solution is consistent and feasible."""
     if results["overall_status"] != "optimal":
         return False
@@ -357,7 +357,7 @@ def validate_solution(results):
     return True
 
 
-def main():
+def main() -> None:
     """Main function to run the chained solvers example."""
     print(__doc__)
 
@@ -371,7 +371,7 @@ def main():
         print("\n✗ Solution validation failed!")
 
 
-def test_chained_solvers():
+def test_chained_solvers() -> None:
     """Test function for pytest."""
     results = solve_chained_optimization()
 

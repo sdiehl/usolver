@@ -191,7 +191,7 @@ def analyze_design(results):
     }
 
 
-def print_results(results):
+def print_results(results) -> None:
     """Print pipeline design results in a formatted way."""
     if results["status"] != "satisfiable":
         print(f"Problem Status: {results['status']}")
@@ -240,7 +240,7 @@ def print_results(results):
         print(f"  Reynolds number: {analysis['reynolds_number']:.0f} ≥ 4,000 ✓")
 
 
-def main():
+def main() -> None:
     """Main function to run the chemical engineering example."""
     print(__doc__)
 
@@ -248,7 +248,7 @@ def main():
     print_results(results)
 
 
-def test_chemical_engineering():
+def test_chemical_engineering() -> None:
     """Test function for pytest."""
     results = solve_pipeline_design()
 

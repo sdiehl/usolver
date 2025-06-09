@@ -61,7 +61,7 @@ def solve_job_shop_problem(
             for _, duration in job:
                 all_durations.append(duration)
 
-        max_duration = max(all_durations) if all_durations else 100
+        max(all_durations) if all_durations else 100
         horizon = sum(all_durations)  # Upper bound on makespan
 
         logger.info(f"Job shop problem: {num_jobs} jobs, {num_machines} machines")
@@ -122,7 +122,7 @@ def solve_job_shop_problem(
             for op_id, (machine, duration) in enumerate(job):
                 machine_operations[machine].append((job_id, op_id))
 
-        for machine_id, operations in enumerate(machine_operations):
+        for _machine_id, operations in enumerate(machine_operations):
             if len(operations) <= 1:
                 continue
 
@@ -443,7 +443,7 @@ def print_job_shop_analysis(
     print(f"\nSolution Validation: {'✓ VALID' if is_valid else '✗ INVALID'}")
 
 
-def main():
+def main() -> None:
     """Main function to demonstrate job shop scheduling."""
     print("USolver Job Shop Scheduling Optimizer")
     print("====================================")
@@ -486,7 +486,7 @@ def main():
         print("No solution found for larger problem")
 
 
-def test_job_shop_scheduler():
+def test_job_shop_scheduler() -> None:
     """Test function for pytest compatibility."""
     # Test small problem
     jobs_data, num_machines = create_sample_job_shop()

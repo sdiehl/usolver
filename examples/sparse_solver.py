@@ -87,7 +87,7 @@ def create_sparse_problem():
     # 1. Facility capacity constraints
     # Each facility has limited capacity across all time periods
     for f in range(n_facilities):
-        capacity = 800 + f * 50  # Capacity increases with facility size
+        800 + f * 50  # Capacity increases with facility size
         for t in range(n_periods):
             var_idx = f * n_periods + t
             rows.append(constraint_idx)
@@ -98,7 +98,7 @@ def create_sparse_problem():
     # 2. Time period demand constraints
     # Each time period has minimum demand requirements
     for t in range(n_periods):
-        demand = 300 + t * 25  # Demand increases over time
+        300 + t * 25  # Demand increases over time
         for f in range(n_facilities):
             var_idx = f * n_periods + t
             rows.append(constraint_idx)
@@ -208,7 +208,7 @@ def analyze_sparsity():
     }
 
 
-def print_results(results):
+def print_results(results) -> None:
     """Print sparse optimization results in a formatted way."""
     if results["status"] != "optimal":
         print(f"Problem Status: {results['status']}")
@@ -253,7 +253,7 @@ def print_results(results):
         print("  ⚠ Dense format might be more efficient")
 
 
-def compare_formats():
+def compare_formats() -> None:
     """Compare memory usage between sparse and dense formats."""
     problem = create_sparse_problem()
     sparse_matrix = problem.problem.constraints.sparse
@@ -274,7 +274,7 @@ def compare_formats():
     print(f"  Compression ratio: {dense_memory / sparse_memory:.1f}:1")
 
 
-def main():
+def main() -> None:
     """Main function to run the sparse optimization example."""
     print(__doc__)
 
@@ -285,7 +285,7 @@ def main():
     compare_formats()
 
 
-def test_sparse_optimization():
+def test_sparse_optimization() -> None:
     """Test function for pytest."""
     results = solve_sparse_optimization()
 

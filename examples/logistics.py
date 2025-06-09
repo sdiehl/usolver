@@ -194,7 +194,7 @@ def analyze_solution(results, problem_params):
     }
 
 
-def print_results(results, problem_params):
+def print_results(results, problem_params) -> None:
     """Print logistics optimization results in a formatted way."""
     if results["status"] != "optimal":
         print(f"Problem Status: {results['status']}")
@@ -254,7 +254,7 @@ def print_results(results, problem_params):
             )
 
 
-def main():
+def main() -> None:
     """Main function to run the logistics optimization example."""
     print(__doc__)
 
@@ -263,9 +263,9 @@ def main():
     print_results(results, problem_params)
 
 
-def test_logistics():
+def test_logistics() -> None:
     """Test function for pytest."""
-    problem_params = create_logistics_problem()
+    create_logistics_problem()
     results = solve_logistics_optimization()
 
     # Test that we get an optimal solution

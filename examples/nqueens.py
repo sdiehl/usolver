@@ -172,7 +172,7 @@ def count_attacks(queens):
     return attacks
 
 
-def print_results(results):
+def print_results(results) -> None:
     """Print N-Queens results in a formatted way."""
     if results["status"] != "feasible":
         print(f"Problem Status: {results['status']}")
@@ -212,7 +212,7 @@ def print_results(results):
             print(f"  {display_key}: {value}")
 
 
-def validate_solution(queens):
+def validate_solution(queens) -> bool:
     """Validate that the queens placement is a valid N-Queens solution."""
     n = len(queens)
 
@@ -230,7 +230,7 @@ def validate_solution(queens):
     return True
 
 
-def benchmark_nqueens(max_n=12):
+def benchmark_nqueens(max_n=12) -> None:
     """Benchmark N-Queens for different board sizes."""
     print("N-Queens Benchmark")
     print("=" * 40)
@@ -246,7 +246,7 @@ def benchmark_nqueens(max_n=12):
             print(f"{n:4d} | ✗ Error   | {str(e)[:20]}...")
 
 
-def main():
+def main() -> None:
     """Main function to run the N-Queens example."""
     print(__doc__)
 
@@ -261,7 +261,7 @@ def main():
     benchmark_nqueens(10)
 
 
-def test_nqueens():
+def test_nqueens() -> None:
     """Test function for pytest."""
     # Test 4-Queens (smallest non-trivial case)
     results = solve_nqueens(4)

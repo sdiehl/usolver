@@ -29,7 +29,6 @@ def create_production_problem():
         dict: Problem parameters for the HiGHS solver
     """
     # Products: [ProductA, ProductB, ProductC]
-    products = ["Product A", "Product B", "Product C"]
 
     # Profit per unit for each product
     profit_per_unit = [25.0, 40.0, 35.0]
@@ -138,7 +137,7 @@ def analyze_solution(results, problem_params):
     }
 
 
-def print_results(results, problem_params):
+def print_results(results, problem_params) -> None:
     """Print production planning results in a formatted way."""
     if results["status"] != "optimal":
         print(f"Problem Status: {results['status']}")
@@ -170,7 +169,7 @@ def print_results(results, problem_params):
             print(f"{name:14}: {usage:6.2f} / {available:6.2f} ({utilization:6.1%})")
 
 
-def main():
+def main() -> None:
     """Main function to run the production planning example."""
     print(__doc__)
 
@@ -179,7 +178,7 @@ def main():
     print_results(results, problem_params)
 
 
-def test_production_planning():
+def test_production_planning() -> None:
     """Test function for pytest."""
     problem_params = create_production_problem()
     results = solve_production_planning()
