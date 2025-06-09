@@ -41,7 +41,9 @@ def solve_job_shop_problem(
         Dictionary containing schedule information if solution found, None otherwise
     """
     try:
-        from usolver_mcp.ortools_solver import solve_ortools_problem
+        from usolver_mcp.models.ortools_models import Problem, Variable, VariableType, Constraint, Objective, ObjectiveType
+        from usolver_mcp.solvers.ortools_solver import solve_problem
+        from returns.result import Success
 
         num_jobs = len(jobs_data)
 
@@ -68,44 +70,44 @@ def solve_job_shop_problem(
             for op_id, (machine, duration) in enumerate(job):
                 # Start time variable
                 variables.append(
-                    {
-                        "name": f"start_{job_id}_{op_id}",
-                        "type": "integer",
-                        "domain": [0, horizon - duration],
-                        "description": f"Start time of operation {op_id} in job {job_id}",
-                    }
+                    Variable(
+                        name=f"start_{job_id}_{op_id}",
+                        type=VariableType.INTEGER,
+                        domain=(0, horizon - duration),
+                        description=f"Start time of operation {op_id} in job {job_id}",
+                    )
                 )
 
                 # End time variable
                 variables.append(
-                    {
-                        "name": f"end_{job_id}_{op_id}",
-                        "type": "integer",
-                        "domain": [duration, horizon],
-                        "description": f"End time of operation {op_id} in job {job_id}",
-                    }
+                    Variable(
+                        name=f"end_{job_id}_{op_id}",
+                        type=VariableType.INTEGER,
+                        domain=(duration, horizon),
+                        description=f"End time of operation {op_id} in job {job_id}",
+                    )
                 )
 
                 # Link start and end times
                 constraints.append(
-                    {
-                        "expression": f"model.add(end_{job_id}_{op_id} == start_{job_id}_{op_id} + {duration})",
-                        "description": f"Duration constraint for job {job_id}, operation {op_id}",
-                    }
+                    Constraint(
+                        expression=f"model.add(end_{job_id}_{op_id} == start_{job_id}_{op_id} + {duration})",
+                        description=f"Duration constraint for job {job_id}, operation {op_id}",
+                    )
                 )
 
         # Precedence constraints within each job
         for job_id, job in enumerate(jobs_data):
             for op_id in range(len(job) - 1):
                 constraints.append(
-                    {
-                        "expression": f"model.add(start_{job_id}_{op_id + 1} >= end_{job_id}_{op_id})",
-                        "description": f"Precedence in job {job_id}: op {op_id} before op {op_id + 1}",
-                    }
+                    Constraint(
+                        expression=f"model.add(start_{job_id}_{op_id + 1} >= end_{job_id}_{op_id})",
+                        description=f"Precedence in job {job_id}: op {op_id} before op {op_id + 1}",
+                    )
                 )
 
         # Machine capacity constraints (no two operations on same machine overlap)
-        machine_operations = [[] for _ in range(num_machines)]
+        machine_operations: list[list[tuple[int, int]]] = [[] for _ in range(num_machines)]
         for job_id, job in enumerate(jobs_data):
             for op_id, (machine, duration) in enumerate(job):
                 machine_operations[machine].append((job_id, op_id))
@@ -120,64 +122,73 @@ def solve_job_shop_problem(
                     # We'll use auxiliary boolean variables for this disjunctive constraint
                     bool_var_name = f"before_{job1}_{op1}_{job2}_{op2}"
                     variables.append(
-                        {
-                            "name": bool_var_name,
-                            "type": "boolean",
-                            "description": f"True if job {job1} op {op1} before job {job2} op {op2}",
-                        }
+                        Variable(
+                            name=bool_var_name,
+                            type=VariableType.BOOLEAN,
+                            description=f"True if job {job1} op {op1} before job {job2} op {op2}",
+                        )
                     )
 
+                    # Use a large constant M for big-M constraints
+                    M = horizon
+                    
                     # If bool_var is true, then job1_op1 ends before job2_op2 starts
                     constraints.append(
-                        {
-                            "expression": f"model.add(({bool_var_name} == 1).implies(end_{job1}_{op1} <= start_{job2}_{op2}))",
-                            "description": f"If {bool_var_name}, then job {job1} op {op1} before job {job2} op {op2}",
-                        }
+                        Constraint(
+                            expression=f"model.add(end_{job1}_{op1} <= start_{job2}_{op2} + {M} * (1 - {bool_var_name}))",
+                            description=f"If {bool_var_name}, then job {job1} op {op1} before job {job2} op {op2}",
+                        )
                     )
 
                     # If bool_var is false, then job2_op2 ends before job1_op1 starts
                     constraints.append(
-                        {
-                            "expression": f"model.add(({bool_var_name} == 0).implies(end_{job2}_{op2} <= start_{job1}_{op1}))",
-                            "description": f"If not {bool_var_name}, then job {job2} op {op2} before job {job1} op {op1}",
-                        }
+                        Constraint(
+                            expression=f"model.add(end_{job2}_{op2} <= start_{job1}_{op1} + {M} * {bool_var_name})",
+                            description=f"If not {bool_var_name}, then job {job2} op {op2} before job {job1} op {op1}",
+                        )
                     )
 
         # Makespan variable (completion time of all jobs)
         variables.append(
-            {
-                "name": "makespan",
-                "type": "integer",
-                "domain": [0, horizon],
-                "description": "Total completion time (makespan)",
-            }
+            Variable(
+                name="makespan",
+                type=VariableType.INTEGER,
+                domain=(0, horizon),
+                description="Total completion time (makespan)",
+            )
         )
 
         # Makespan is at least the end time of all operations
         for job_id, job in enumerate(jobs_data):
             last_op = len(job) - 1
             constraints.append(
-                {
-                    "expression": f"model.add(makespan >= end_{job_id}_{last_op})",
-                    "description": f"Makespan at least completion time of job {job_id}",
-                }
+                Constraint(
+                    expression=f"model.add(makespan >= end_{job_id}_{last_op})",
+                    description=f"Makespan at least completion time of job {job_id}",
+                )
             )
 
-        # Solve the problem
-        problem = {
-            "variables": variables,
-            "constraints": constraints,
-            "objective": {"type": "minimize", "expression": "makespan"},
-            "description": f"Job shop scheduling: {num_jobs} jobs on {num_machines} machines",
-        }
+        # Create objective
+        objective = Objective(
+            type=ObjectiveType.MINIMIZE,
+            expression="makespan"
+        )
+
+        # Create problem
+        problem = Problem(
+            variables=variables,
+            constraints=constraints,
+            objective=objective,
+            description=f"Job shop scheduling: {num_jobs} jobs on {num_machines} machines",
+        )
 
         logger.info("Solving job shop scheduling problem...")
-        result = solve_ortools_problem(problem=problem)
+        result = solve_problem(problem)
 
-        if result and len(result) > 0:
-            result_text = result[0].text
-            if "OPTIMAL" in result_text or "FEASIBLE" in result_text:
-                return parse_job_shop_solution(result_text, jobs_data, num_machines)
+        if isinstance(result, Success):
+            solution = result.unwrap()
+            if solution.is_feasible:
+                return parse_job_shop_solution_from_values(solution.values, jobs_data, num_machines)
 
         logger.warning("No solution found for job shop problem")
         return None
@@ -185,6 +196,54 @@ def solve_job_shop_problem(
     except Exception as e:
         logger.error(f"Error solving job shop problem: {e}")
         return None
+
+
+def parse_job_shop_solution_from_values(
+    values: dict[str, int], jobs_data: list[list[tuple[int, int]]], num_machines: int
+) -> dict:
+    """Parse the OR-Tools solution values for job shop scheduling."""
+    solution = {
+        "status": "SOLVED",
+        "jobs": [],
+        "machines": [[] for _ in range(num_machines)],
+        "makespan": values.get("makespan", 0),
+    }
+
+    # Build job schedules
+    for job_id, job in enumerate(jobs_data):
+        job_schedule = []
+        for op_id, (machine, duration) in enumerate(job):
+            start_time = values.get(f"start_{job_id}_{op_id}", 0)
+            end_time = values.get(f"end_{job_id}_{op_id}", duration)
+
+            operation = {
+                "operation": op_id,
+                "machine": machine,
+                "start_time": start_time,
+                "end_time": end_time,
+                "duration": duration,
+            }
+            job_schedule.append(operation)
+
+            # Add to machine schedule
+            if machine < len(solution["machines"]):
+                solution["machines"][machine].append(
+                    {
+                        "job": job_id,
+                        "operation": op_id,
+                        "start_time": start_time,
+                        "end_time": end_time,
+                        "duration": duration,
+                    }
+                )
+
+        solution["jobs"].append(job_schedule)
+
+    # Sort machine schedules by start time
+    for machine_schedule in solution["machines"]:
+        machine_schedule.sort(key=lambda x: x["start_time"])
+
+    return solution
 
 
 def parse_job_shop_solution(
