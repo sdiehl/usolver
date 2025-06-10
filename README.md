@@ -19,6 +19,10 @@ uv run install.py
 
 Then open Claude or Cursor and you should see the MCP tool `usolver` available in the tool list.
 
+<a href="https://glama.ai/mcp/servers/@sdiehl/usolver">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@sdiehl/usolver/badge" alt="USolver MCP server" />
+</a>
+
 ## Examples
 
 To run the individual solver examples you can invoke the individual example modules. Each module contains a docstring which can be used to prompt the language model to solve the problem.
