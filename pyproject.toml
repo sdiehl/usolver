@@ -48,6 +48,7 @@ filterwarnings = [
     "ignore::UserWarning:cvxpy.*",
     "ignore:Type google._upb._message.*:DeprecationWarning",
 ]
+norecursedirs = ["examples/full"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["usolver_mcp"]

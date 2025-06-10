@@ -1,0 +1,11 @@
+stream_id,stream_name,component_1_flowrate,component_2_flowrate,component_3_flowrate,temperature,pressure,unit_from,unit_to,description
+S1,Feed Stream,100.0,50.0,10.0,80.0,1.5,FEED,DISTILLATION_COL,Raw feed to distillation column
+S2,Distillate,85.0,5.0,0.5,65.0,1.2,DISTILLATION_COL,CONDENSER,Top product from column
+S3,Bottoms,15.0,45.0,9.5,120.0,1.6,DISTILLATION_COL,REBOILER,Bottom product from column
+S4,Reflux,42.5,2.5,0.25,35.0,1.2,CONDENSER,DISTILLATION_COL,Reflux back to column
+S5,Condensate,42.5,2.5,0.25,35.0,1.2,CONDENSER,PRODUCT_TANK_1,Final distillate product
+S6,Vapor to Reboiler,15.0,45.0,9.5,120.0,1.6,REBOILER,STEAM_GENERATOR,Vapor for heating
+S7,Final Bottoms,15.0,45.0,9.5,95.0,1.4,REBOILER,PRODUCT_TANK_2,Final bottom product
+S8,Steam,0.0,0.0,0.0,150.0,3.0,STEAM_GENERATOR,REBOILER,Heating steam
+S9,Cooling Water In,0.0,0.0,0.0,25.0,2.0,COOLING_TOWER,CONDENSER,Cooling water supply
+S10,Cooling Water Out,0.0,0.0,0.0,40.0,1.8,CONDENSER,COOLING_TOWER,Heated cooling water return 
