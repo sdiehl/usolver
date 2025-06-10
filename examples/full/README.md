@@ -2,6 +2,31 @@
 
 Example of using usolver to optimize a distillation column design end to end with Claude API.
 
+## Problem Statement
+
+There is a separation plant that takes a mixed feed stream containing three different chemicals (C1, C2, and C3) and separates them into two purified products.
+
+Think of this like a whiskey distillery or oil refinery, we start with a crude mixture and end up with separate, purified products. In this case, we're turning a 3-component mixture into two pure streams as output. The plant uses heat and cooling to exploit the fact that different chemicals boil at different temperatures, allowing for clean separation.
+
+1. **Feed Input**: A mixture of three chemicals enters the system at 80°C
+   - Component 1 (C1): 100 kmol/h
+   - Component 2 (C2): 50 kmol/h
+   - Component 3 (C3): 10 kmol/h
+
+2. **Distillation Column**: Separates the mixture by taking advantage of different boiling points:
+   - **Lighter components** (C1) rise to the top as vapor
+   - **Heavier components** (C3) sink to the bottom as liquid
+
+3. **Two Main Outputs**:
+   - **Top Product (Distillate)**: Mostly pure C1 (85 kmol/h) - collected in Product Tank 1
+   - **Bottom Product**: Mostly pure C3 (9.5 kmol/h) - collected in Product Tank 2
+
+4. **Equipment**:
+   - **Condenser**: Cools the top vapor back to liquid using cooling water
+   - **Reboiler**: Heats the bottom liquid to create vapor using steam
+   - **Cooling Tower**: Recycles cooling water
+   - **Steam Generator**: Provides heat energy
+
 ## Process Flowsheet
 
 ```mermaid
