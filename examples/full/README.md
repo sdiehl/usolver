@@ -27,6 +27,10 @@ Think of this like a whiskey distillery or oil refinery, we start with a crude m
    - **Cooling Tower**: Recycles cooling water
    - **Steam Generator**: Provides heat energy
 
+The goal is to find the optimal design configuration that minimizes the total annual cost while meeting strict product purity requirements. We need to determine the optimal number of trays, reflux ratio, feed tray location, and column diameter that will achieve at least 95% purity for Component 1 in the distillate and 90% purity for Component 3 in the bottoms product.
+
+The optimization must balance capital costs (equipment sizing) against operating costs (steam and cooling water consumption) while satisfying physical constraints of pressure drop limits, tray efficiency requirements, and flooding prevention.
+
 ## Process Flowsheet
 
 ```mermaid
