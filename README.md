@@ -21,7 +21,7 @@ Then open Claude or Cursor and you should see the MCP tool `usolver` available i
 
 ## Examples
 
-To run the individual solver examples. You can invoke the individual examples. Below are example using the solvers, and each module contains a docstring which can be used to prompt the language model to solve the problem.
+To run the individual solver examples you can invoke the individual example modules. Each module contains a docstring which can be used to prompt the language model to solve the problem.
 
 - **[Chemical Engineering](examples/chemical_engineering.py)** - Pipeline design optimization using Z3 SMT solver for fluid transport systems with flow continuity, pressure drop, and economic constraints
 - **[Chained Solvers](examples/chained_solvers.py)** - Multi-stage restaurant optimization combining OR-Tools for table layout and CVXPY for staff scheduling
