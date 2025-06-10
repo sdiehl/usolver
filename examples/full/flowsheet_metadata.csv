@@ -5,14 +5,18 @@ Design_Variables,Feed_Tray_Location,,,integer,5,45,Optimal tray number for feed 
 Design_Variables,Column_Diameter,,,real,0.8,3.0,Internal diameter of distillation column (m)
 Process_Parameters,Feed_Temperature,80.0,C,fixed,,,Temperature of incoming feed stream
 Process_Parameters,Feed_Pressure,1.5,bar,fixed,,,Pressure of incoming feed stream
-Process_Parameters,Component_1_Feed,100.0,kmol/h,fixed,,,Flowrate of light component in feed
-Process_Parameters,Component_2_Feed,50.0,kmol/h,fixed,,,Flowrate of medium component in feed
-Process_Parameters,Component_3_Feed,10.0,kmol/h,fixed,,,Flowrate of heavy component in feed
-Product_Specs,Distillate_Purity_C1,,,real,0.95,0.99,Minimum purity of component 1 in distillate
-Product_Specs,Bottoms_Purity_C3,,,real,0.90,0.98,Minimum purity of component 3 in bottoms
+Process_Parameters,Component_A_Feed,100.0,kmol/h,fixed,,,Flowrate of light component A in feed
+Process_Parameters,Component_B_Feed,60.0,kmol/h,fixed,,,Flowrate of heavy component B in feed
+Process_Parameters,Feed_Composition_A,0.625,,fixed,,,Mole fraction of component A in feed
+Process_Parameters,Feed_Composition_B,0.375,,fixed,,,Mole fraction of component B in feed
+Product_Specs,Distillate_Purity_A,,,real,0.95,0.99,Minimum purity of component A in distillate
+Product_Specs,Bottoms_Purity_B,,,real,0.90,0.98,Minimum purity of component B in bottoms
+Recovery_Specs,Recovery_A_in_Distillate,,,real,0.90,0.99,Minimum recovery of A in distillate product
+Recovery_Specs,Recovery_B_in_Bottoms,,,real,0.85,0.98,Minimum recovery of B in bottoms product
 Operating_Constraints,Maximum_Pressure_Drop,5.0,kPa,upper_bound,,,Maximum allowable pressure drop across column
 Operating_Constraints,Minimum_Tray_Efficiency,0.6,,lower_bound,,,Minimum tray efficiency for mass transfer
 Operating_Constraints,Maximum_Vapor_Velocity,2.5,m/s,upper_bound,,,Maximum vapor velocity to prevent flooding
+Physical_Properties,Relative_Volatility_AB,2.5,,fixed,,,Relative volatility of A with respect to B
 Utility_Constraints,Steam_Pressure,3.0,bar,fixed,,,Steam pressure for reboiler heating
 Utility_Constraints,Cooling_Water_Temp,25.0,C,fixed,,,Inlet temperature of cooling water
 Utility_Constraints,Max_Steam_Flow,500.0,kg/h,upper_bound,,,Maximum available steam flowrate
@@ -21,5 +25,4 @@ Economic_Parameters,Steam_Cost,0.02,$/kg,fixed,,,Cost of steam per kilogram
 Economic_Parameters,Cooling_Water_Cost,0.001,$/kg,fixed,,,Cost of cooling water per kilogram
 Economic_Parameters,Column_Material_Cost,5000.0,$/m,fixed,,,Cost per meter of column height
 Economic_Parameters,Tray_Cost,1500.0,$/tray,fixed,,,Cost per theoretical tray
-Objective,Minimize_Total_Cost,,,objective,,,Minimize sum of capital and operating costs
-Objective,Maximize_Recovery_C1,,,objective,,,Maximize recovery of valuable component 1 
+Objective,Minimize_Total_Cost,,,objective,,,Minimize sum of capital and operating costs 
