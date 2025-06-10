@@ -1,4 +1,4 @@
-Optimize a distillation column design to minimize total annual cost while meeting product purity specifications.
+Optimize a distillation column design to minimize total annual cost while meeting product purity specifications. Use HiGHS solver.
 
 **Feed:** 
 
@@ -81,7 +81,7 @@ For this binary distillation optimization, use these approximations:
 Solve this optimization problem and provide:
 
 1. Optimal values for all design variables
-2. Verification that all constraints are satisfied
-3. Total annual cost breakdown
-4. Key performance metrics (recovery rates, energy consumption)
-5. Material balance verification for both components 
+2. Total annual cost breakdown
+3. Key performance metrics (recovery rates, energy consumption)
+
+As markdown tables.
