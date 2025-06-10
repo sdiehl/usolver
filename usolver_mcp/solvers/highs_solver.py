@@ -3,7 +3,9 @@ import numpy as np
 from returns.result import Failure, Result, Success
 
 from usolver_mcp.models.highs_models import (
+    HiGHSConstraints,
     HiGHSConstraintSense,
+    HiGHSObjective,
     HiGHSOptions,
     HiGHSOutput,
     HiGHSProblem,
@@ -341,13 +343,6 @@ def simple_highs_solver(
         Result containing HiGHSOutput or error message
     """
     try:
-        from usolver_mcp.models.highs_models import (
-            HiGHSConstraints,
-            HiGHSObjective,
-            HiGHSProblem,
-            HiGHSProblemSpec,
-        )
-
         # Validate sense
         try:
             problem_sense = HiGHSSense(sense)
