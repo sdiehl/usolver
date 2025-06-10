@@ -16,7 +16,7 @@ client = anthropic.Anthropic()
 flowsheet_file = client.beta.files.upload(
     file=(
         "flowsheet_data.csv",
-        open(Path(__file__).parent / "flowsheet_data.csv", "rb"),
+        open(Path(__file__).parent / "flowsheet_data.xlsx", "rb"),
         "text/csv",
     )
 )
@@ -24,7 +24,7 @@ flowsheet_file = client.beta.files.upload(
 metadata_file = client.beta.files.upload(
     file=(
         "flowsheet_metadata.csv",
-        open(Path(__file__).parent / "flowsheet_metadata.csv", "rb"),
+        open(Path(__file__).parent / "flowsheet_metadata.xlsx", "rb"),
         "text/csv",
     )
 )
