@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-from anthropic import Anthropic
+import anthropic
 
 with open(Path(__file__).parent / "prompt.md") as f:
     prompt = f.read()
@@ -11,11 +11,43 @@ if not os.getenv("ANTHROPIC_API_KEY"):
     print("Error: Set ANTHROPIC_API_KEY environment variable")
     sys.exit(1)
 
-anthropic = Anthropic()
-response = anthropic.beta.messages.create(
-    model="claude-3-5-sonnet-20241022",
+client = anthropic.Anthropic()
+
+flowsheet_file = client.beta.files.upload(
+    file=(
+        "flowsheet_data.csv",
+        open(Path(__file__).parent / "flowsheet_data.csv", "rb"),
+        "text/csv",
+    )
+)
+
+metadata_file = client.beta.files.upload(
+    file=(
+        "flowsheet_metadata.csv",
+        open(Path(__file__).parent / "flowsheet_metadata.csv", "rb"),
+        "text/csv",
+    )
+)
+
+response = client.beta.messages.create(
+    model="claude-sonnet-4-20250514",
     max_tokens=4000,
-    messages=[{"role": "user", "content": prompt}],
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt},
+                {
+                    "type": "document",
+                    "source": {"type": "file", "file_id": flowsheet_file.id},
+                },
+                {
+                    "type": "document",
+                    "source": {"type": "file", "file_id": metadata_file.id},
+                },
+            ],
+        }
+    ],
     mcp_servers=[
         {
             "type": "url",
@@ -33,6 +65,7 @@ response = anthropic.beta.messages.create(
             ],
         }
     ],
+    betas=["files-api-2025-04-14"],
     extra_headers={"anthropic-beta": "mcp-client-2025-04-04"},
 )
 
