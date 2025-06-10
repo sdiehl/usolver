@@ -922,7 +922,7 @@ requires-dist = [
     { name = "cvxpy" },
     { name = "fastmcp", specifier = ">=0.1.0" },
     { name = "highspy", specifier = ">=1.11.0" },
-    { name = "ortools", specifier = "<9.12.0" },
+    { name = "ortools", specifier = "<9.14.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "returns", specifier = ">=0.20.0" },
     { name = "z3-solver", specifier = ">=4.14.1.0" },

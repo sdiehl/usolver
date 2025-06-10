@@ -102,7 +102,7 @@ def main() -> None:
     print("MCP Server Installer")
     print("======================")
     print()
-    print("This will install the Z3 MCP solver to your local client configurations.")
+    print("This will install the USolver MCP solver to your local client configurations.")
     print(f"Installation directory: {script_dir}")
     print(f"Server name: {server_name}")
     print()
