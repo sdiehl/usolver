@@ -4,9 +4,7 @@ Example of using usolver to optimize a distillation column design end to end wit
 
 ## Problem Statement
 
-There is a separation plant that takes a mixed feed stream containing three different chemicals (C1, C2, and C3) and separates them into two purified products.
-
-Think of this like a whiskey distillery or oil refinery, we start with a crude mixture and end up with separate, purified products. In this case, we're turning a 3-component mixture into two pure streams as output. The plant uses heat and cooling to exploit the fact that different chemicals boil at different temperatures, allowing for clean separation.
+There is a toy specification for a separation plant that takes a mixed feed stream containing three different chemicals (C1, C2, and C3) and separates them into two purified products. A very simplified version of the design behind a whiskey distillery or oil refinery, we start with a crude mixture and end up with separate, purified products. In this case, we're turning a 3-component mixture into two pure streams as output. The plant uses heat and cooling to exploit the fact that different chemicals boil at different temperatures, allowing for clean separation.
 
 1. **Feed Input**: A mixture of three chemicals enters the system at 80°C
    - Component 1 (C1): 100 kmol/h
