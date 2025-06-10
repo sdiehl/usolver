@@ -31,6 +31,7 @@ To run the individual solver examples. You can invoke the individual examples. B
 - **[Portfolio Theory](examples/portfolio_theory.py)** - Modern portfolio optimization using CVXPY to maximize returns while constraining risk across asset classes
 - **[Production Planning](examples/production_planning.py)** - Manufacturing optimization using HiGHS to maximize profit subject to machine, labor, and material constraints
 - **[Resource Allocation](examples/resource_allocation.py)** - Project portfolio selection using HiGHS mixed-integer programming to maximize value within budget and resource limits
+- **[Network Flow](examples/network_flow.py)** - Shortest path optimization using HiGHS linear programming to find minimum-cost routes through directed graphs with flow conservation constraints
 - **[Coin Problem](examples/coin_problem.py)** - Classic logic puzzle using Z3 to find which 6 US coins total $1.15 but cannot make change for various denominations
 - **[Cryptarithmetic](examples/cryptarithmetic.py)** - Solve cryptarithmetic puzzles like SEND + MORE = MONEY using Z3 constraint programming
 - **[Knapsack Problem](examples/knapsack.py)** - Classic 0/1 knapsack optimization using OR-Tools to maximize value within weight constraints
